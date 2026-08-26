@@ -336,6 +336,7 @@ function startRunway() {
   document.getElementById("runway-name").textContent = currentCharacter.name;
   document.getElementById("runway-suspense").classList.add("hidden");
 
+  switchBGM("runway"); // 런웨이 전용 BGM으로 전환
   showScreen("runway");
   playWalk();
   scheduleFootsteps(); // 걷는 동안 또각또각 발걸음 소리
@@ -477,32 +478,64 @@ function playDrumroll() {
   return (t + 0.7) - start;
 }
 
-// --- BGM (배경음악): 부드러운 아르페지오 4마디(C-G-Am-F) 반복 ---
-let bgmOn = false, bgmBar = 0, bgmTimer = null;
-const BGM_CHORDS = [
-  [261.63, 329.63, 392.00], // C
-  [392.00, 493.88, 587.33], // G
-  [220.00, 261.63, 329.63], // Am
-  [174.61, 220.00, 261.63], // F
-];
-const BGM_STEP = 0.30;
-const BGM_BAR_SEC = 8 * BGM_STEP;
-function startBGM() {
-  if (bgmOn) return;
+// --- BGM (배경음악): 화면에 따라 테마를 갈아끼워요 ---
+//   main   : 평소(고르기·입히기) - 잔잔한 C-G-Am-F
+//   runway : 런웨이 무대 - 더 빠르고 화려한 느낌 (Am-F-C-G, 톱니파 음색)
+const BGM_THEMES = {
+  main: {
+    step: 0.30, type: "triangle",
+    chords: [
+      [261.63, 329.63, 392.00], // C
+      [392.00, 493.88, 587.33], // G
+      [220.00, 261.63, 329.63], // Am
+      [174.61, 220.00, 261.63], // F
+    ],
+  },
+  runway: {
+    step: 0.22, type: "sawtooth",
+    chords: [
+      [220.00, 261.63, 329.63], // Am
+      [174.61, 220.00, 261.63], // F
+      [261.63, 329.63, 392.00], // C
+      [196.00, 246.94, 293.66], // G(낮게) - 무대 느낌
+    ],
+  },
+};
+
+let bgmOn = false, bgmBar = 0, bgmTimer = null, bgmTheme = "main";
+
+// 특정 테마로 BGM 시작/전환
+function switchBGM(theme) {
   const ctx = ensureAudio(); if (!ctx) return;
-  bgmOn = true; bgmBar = 0;
+  bgmTheme = theme;
+  bgmBar = 0;
+  bgmOn = true;
+  clearTimeout(bgmTimer); // 이전 예약 취소하고 새 테마로 즉시 전환
   playBGMBar();
 }
+
+// 처음 시작할 때(기본 테마)
+function startBGM() {
+  if (bgmOn) return;
+  switchBGM("main");
+}
+
 function playBGMBar() {
   if (!bgmOn) return;
+  const theme = BGM_THEMES[bgmTheme];
+  const step = theme.step;
+  const barSec = 8 * step;
   const t0 = audioCtx.currentTime + 0.05;
-  const ch = BGM_CHORDS[bgmBar % 4];
+  const ch = theme.chords[bgmBar % theme.chords.length];
   const notes = [ch[0], ch[1], ch[2], ch[0] * 2, ch[2], ch[1], ch[0] * 2, ch[2]];
-  for (let i = 0; i < 8; i++) tone(notes[i], t0 + i * BGM_STEP, 0.28, { type: "triangle", gain: 0.5, dest: bgmGain });
-  tone(ch[0] / 2, t0, BGM_BAR_SEC * 0.9, { type: "sine", gain: 0.6, dest: bgmGain }); // 낮은 베이스
+  for (let i = 0; i < 8; i++) {
+    tone(notes[i], t0 + i * step, step * 0.9, { type: theme.type, gain: 0.5, dest: bgmGain });
+  }
+  tone(ch[0] / 2, t0, barSec * 0.9, { type: "sine", gain: 0.6, dest: bgmGain }); // 낮은 베이스
   bgmBar++;
-  bgmTimer = setTimeout(playBGMBar, BGM_BAR_SEC * 1000);
+  bgmTimer = setTimeout(playBGMBar, barSec * 1000);
 }
+
 function duckBGM(down) {
   if (bgmGain) bgmGain.gain.value = down ? 0.05 : 0.16;
 }
@@ -605,6 +638,7 @@ function showResult() {
 // 결과 카드의 '옷 다시 입히기' 버튼
 document.getElementById("result-edit-button").addEventListener("click", () => {
   sfxClick();
+  switchBGM("main"); // 평소 BGM으로 복귀
   document.getElementById("result-overlay").classList.add("hidden");
   showScreen("dressup");
 });
@@ -612,6 +646,7 @@ document.getElementById("result-edit-button").addEventListener("click", () => {
 // 결과 카드의 '다른 캐릭터' 버튼
 document.getElementById("result-again-button").addEventListener("click", () => {
   sfxClick();
+  switchBGM("main"); // 평소 BGM으로 복귀
   document.getElementById("result-overlay").classList.add("hidden");
   showScreen("select");
 });
