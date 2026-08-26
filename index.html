@@ -66,16 +66,24 @@
           <svg viewBox="0 0 300 400" class="runway-character" id="runway-svg"></svg>
         </div>
       </div>
-    </div>
 
-    <!-- 걷기가 끝나면 나타나는 버튼들 -->
-    <div class="runway-controls hidden" id="runway-controls">
-      <button id="rewalk-button" class="ghost-button">🔁 다시 걷기</button>
-      <button id="runway-edit-button" class="ghost-button">👗 옷 고치기</button>
-      <button id="evaluate-button" class="finish-button">AI 평가 받기 →</button>
+      <!-- 걷기가 끝나면 뜨는 '두구두구' 자막 -->
+      <div id="runway-suspense" class="runway-suspense hidden">🥁 두구두구…</div>
     </div>
-    <p id="runway-message" class="finish-message"></p>
   </section>
+
+  <!-- ============ 확인 팝업 (런웨이 올라가기 전) ============ -->
+  <div id="confirm-overlay" class="overlay hidden">
+    <div class="confirm-card">
+      <div class="confirm-emoji">💃</div>
+      <div class="confirm-title">이대로 런웨이에 올라갈까요?</div>
+      <p class="confirm-text">무대에 오르면 이 옷차림으로 평가를 받아요.</p>
+      <div class="confirm-buttons">
+        <button id="confirm-no" class="ghost-button">아직요</button>
+        <button id="confirm-yes" class="finish-button">네, 올라갈래요!</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ 결과 카드 (평가 팝업) ============ -->
   <div id="result-overlay" class="overlay hidden">

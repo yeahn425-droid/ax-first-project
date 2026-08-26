@@ -304,47 +304,128 @@ function renderDressed(char) {
 }
 
 // -------------------------------------------------------------------
-// 13) [4단계 핵심] '완성!' → 런웨이 무대로 보내기
+// 13-1) '완성!' → 먼저 확인 팝업을 띄워요
+//       (브라우저 링크로 열어도 잘 뜨도록, 게임 안에 만든 확인창을 써요)
+// -------------------------------------------------------------------
+document.getElementById("finish-button").addEventListener("click", () => {
+  document.getElementById("confirm-overlay").classList.remove("hidden");
+});
+
+// 확인창의 '취소' → 그냥 닫기 (계속 옷 입히기)
+document.getElementById("confirm-no").addEventListener("click", () => {
+  document.getElementById("confirm-overlay").classList.add("hidden");
+});
+
+// 확인창의 '네, 올라갈래요!' → 소리 준비 후 런웨이 시작
+document.getElementById("confirm-yes").addEventListener("click", () => {
+  document.getElementById("confirm-overlay").classList.add("hidden");
+  unlockAudio();   // 소리는 '버튼 클릭' 순간에 미리 켜둬야 나중에 재생돼요
+  startRunway();
+});
+
+// -------------------------------------------------------------------
+// 13-2) 런웨이 무대로 보내기 + 걷기 애니메이션
 // -------------------------------------------------------------------
 function startRunway() {
-  // 지금 입은 모습 그대로 런웨이 캐릭터를 그려요
   document.getElementById("runway-svg").innerHTML = renderDressed(currentCharacter);
   document.getElementById("runway-name").textContent = currentCharacter.name;
+  document.getElementById("runway-suspense").classList.add("hidden");
 
   showScreen("runway");
   playWalk();
 }
 
-// 걷기 애니메이션을 재생(또는 다시 재생)하는 함수
 function playWalk() {
   const walker = document.getElementById("walker");
-  const controls = document.getElementById("runway-controls");
-
-  controls.classList.add("hidden");     // 걷는 동안엔 버튼 숨김
-
-  // 애니메이션을 처음부터 다시 시작시키는 기법:
-  // 클래스를 뗐다가 → 브라우저가 한 번 그리게 한 뒤 → 다시 붙여요.
+  // 애니메이션을 처음부터 다시 시작시키는 기법
   walker.classList.remove("walking");
-  void walker.offsetWidth; // (브라우저에게 "지금 상태를 반영해" 하고 알리는 한 줄)
+  void walker.offsetWidth;
   walker.classList.add("walking");
 }
 
-// 걷기가 끝나면(무대 앞 도착) 흔들림을 멈추고 버튼들을 보여줘요
+// -------------------------------------------------------------------
+// 13-3) 걷기가 끝나면 → 두구두구 드럼롤 → 결과 모달
+// -------------------------------------------------------------------
 document.getElementById("walker").addEventListener("animationend", () => {
-  document.getElementById("walker").classList.remove("walking"); // 위아래 흔들림 정지 → 포즈
-  document.getElementById("runway-controls").classList.remove("hidden");
+  document.getElementById("walker").classList.remove("walking"); // 흔들림 정지 → 포즈
+
+  // "두구두구…" 자막 보여주기
+  document.getElementById("runway-suspense").classList.remove("hidden");
+
+  // 드럼롤 소리를 재생하고, 그 길이만큼 기다렸다가 결과를 띄워요
+  const durationMs = playDrumroll() * 1000;
+  setTimeout(() => {
+    document.getElementById("runway-suspense").classList.add("hidden");
+    showResult();
+  }, durationMs);
 });
 
-// '완성!' 버튼 → 런웨이 시작
-document.getElementById("finish-button").addEventListener("click", startRunway);
+// -------------------------------------------------------------------
+// 13-4) 드럼롤 소리 만들기 (Web Audio - 소리 파일 없이 직접 합성)
+//       인터넷/파일 없이 브라우저가 직접 소리를 만들어요.
+// -------------------------------------------------------------------
+let audioCtx = null;
+function unlockAudio() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
 
-// '다시 걷기' 버튼
-document.getElementById("rewalk-button").addEventListener("click", playWalk);
+// 북 한 번 '둥' 치는 소리
+function drumHit(ctx, time, freq, gainPeak) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(freq, time);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.6, time + 0.12);
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(gainPeak, time + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
+  osc.connect(g).connect(ctx.destination);
+  osc.start(time);
+  osc.stop(time + 0.16);
+}
 
-// '옷 고치기' 버튼 → 입히기 화면으로 (지금 입은 옷 그대로 유지)
-document.getElementById("runway-edit-button").addEventListener("click", () => {
-  showScreen("dressup");
-});
+// 마지막 '챙~' 심벌 소리 (잡음으로 만들기)
+function cymbal(ctx, time) {
+  const dur = 0.7;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 5000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.4, time);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+  src.connect(hp).connect(g).connect(ctx.destination);
+  src.start(time);
+  src.stop(time + dur);
+}
+
+// 두구두구… (점점 빨라지는 북소리) → 마지막에 '챙!'
+// 반환값: 전체 소리 길이(초)
+function playDrumroll() {
+  if (!audioCtx) return 1.6; // 소리를 못 켠 경우에도 최소 대기시간은 줘요
+  const ctx = audioCtx;
+  const start = ctx.currentTime;
+  let t = start;
+  let interval = 0.13;
+  for (let i = 0; i < 26; i++) {
+    drumHit(ctx, t, 120 + i * 2, 0.4);
+    t += interval;
+    interval *= 0.955; // 조금씩 빨라짐 = 긴장감 UP
+  }
+  drumHit(ctx, t + 0.05, 90, 0.9); // 마지막 큰 북
+  cymbal(ctx, t + 0.05);           // 챙~
+  return (t + 0.7) - start;
+}
 
 // ===================================================================
 //  [5단계 핵심] 옷차림 평가하기
@@ -403,8 +484,8 @@ function evaluateOutfit(character, worn) {
   return { score, verdict, emoji, comment };
 }
 
-// 'AI 평가 받기' 버튼 → 평가 실행 후 결과 카드 보여주기
-document.getElementById("evaluate-button").addEventListener("click", () => {
+// 드럼롤이 끝나면 자동으로 호출돼요 → 평가 결과 카드 띄우기
+function showResult() {
   const worn = getWornItems();
   const result = evaluateOutfit(currentCharacter, worn);
 
@@ -414,7 +495,7 @@ document.getElementById("evaluate-button").addEventListener("click", () => {
   document.getElementById("result-comment").textContent = `${currentCharacter.name}: “${result.comment}”`;
 
   document.getElementById("result-overlay").classList.remove("hidden");
-});
+}
 
 // 결과 카드의 '옷 다시 입히기' 버튼
 document.getElementById("result-edit-button").addEventListener("click", () => {
