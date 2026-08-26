@@ -202,6 +202,7 @@ function drawCharacterSelect() {
 // 7) 캐릭터를 골랐을 때
 // -------------------------------------------------------------------
 function selectCharacter(char) {
+  sfxSelect();
   currentCharacter = char;
   wearing.hat = null;
   wearing.top = null;
@@ -253,8 +254,10 @@ function drawWardrobe() {
 function clickItem(item) {
   if (wearing[item.category] === item.id) {
     wearing[item.category] = null;
+    sfxUnequip(); // 벗을 때 소리
   } else {
     wearing[item.category] = item.id;
+    sfxEquip();   // 입을 때 소리
   }
   dressCharacter();
   drawWardrobe();
@@ -308,18 +311,20 @@ function renderDressed(char) {
 //       (브라우저 링크로 열어도 잘 뜨도록, 게임 안에 만든 확인창을 써요)
 // -------------------------------------------------------------------
 document.getElementById("finish-button").addEventListener("click", () => {
+  sfxClick();
   document.getElementById("confirm-overlay").classList.remove("hidden");
 });
 
 // 확인창의 '취소' → 그냥 닫기 (계속 옷 입히기)
 document.getElementById("confirm-no").addEventListener("click", () => {
+  sfxClick();
   document.getElementById("confirm-overlay").classList.add("hidden");
 });
 
-// 확인창의 '네, 올라갈래요!' → 소리 준비 후 런웨이 시작
+// 확인창의 '네, 올라갈래요!' → 런웨이 시작
 document.getElementById("confirm-yes").addEventListener("click", () => {
   document.getElementById("confirm-overlay").classList.add("hidden");
-  unlockAudio();   // 소리는 '버튼 클릭' 순간에 미리 켜둬야 나중에 재생돼요
+  sfxConfirm();
   startRunway();
 });
 
@@ -333,6 +338,7 @@ function startRunway() {
 
   showScreen("runway");
   playWalk();
+  scheduleFootsteps(); // 걷는 동안 또각또각 발걸음 소리
 }
 
 function playWalk() {
@@ -360,72 +366,169 @@ document.getElementById("walker").addEventListener("animationend", () => {
   }, durationMs);
 });
 
-// -------------------------------------------------------------------
-// 13-4) 드럼롤 소리 만들기 (Web Audio - 소리 파일 없이 직접 합성)
-//       인터넷/파일 없이 브라우저가 직접 소리를 만들어요.
-// -------------------------------------------------------------------
+// ===================================================================
+//  사운드 엔진 (Web Audio - 소리 파일 없이 브라우저가 직접 소리 생성)
+//  BGM(배경음악)과 효과음(클릭/장착/발걸음/팡파레/드럼롤)을 여기서 다 만들어요.
+//  구조: 모든 소리 → sfxGain 또는 bgmGain → masterGain(음소거 조절) → 스피커
+// ===================================================================
 let audioCtx = null;
-function unlockAudio() {
+let masterGain = null, bgmGain = null, sfxGain = null;
+let soundMuted = false;
+
+// 저장된 음소거 상태 불러오기 (처음이면 소리 켬)
+try { soundMuted = localStorage.getItem("dressup-muted") === "1"; } catch (e) {}
+
+// 소리 시스템을 준비(최초 1회)하고 깨우는 함수
+function ensureAudio() {
   if (!audioCtx) {
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) audioCtx = new AC();
+    if (!AC) return null;
+    audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = soundMuted ? 0 : 1;
+    masterGain.connect(audioCtx.destination);
+    bgmGain = audioCtx.createGain(); bgmGain.gain.value = 0.16; bgmGain.connect(masterGain);
+    sfxGain = audioCtx.createGain(); sfxGain.gain.value = 0.5;  sfxGain.connect(masterGain);
   }
-  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
 }
 
-// 북 한 번 '둥' 치는 소리
-function drumHit(ctx, time, freq, gainPeak) {
-  const osc = ctx.createOscillator();
-  const g = ctx.createGain();
+// 음(오실레이터) 하나를 재생하는 기본 도구
+function tone(freq, start, dur, opts) {
+  opts = opts || {};
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = opts.type || "sine";
+  osc.frequency.setValueAtTime(freq, start);
+  if (opts.glideTo) osc.frequency.exponentialRampToValueAtTime(opts.glideTo, start + dur);
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(opts.gain || 0.4, start + (opts.attack || 0.005));
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  osc.connect(g).connect(opts.dest || sfxGain);
+  osc.start(start);
+  osc.stop(start + dur + 0.02);
+}
+
+// 여러 음을 순서대로 (멜로디/팡파레용)
+function melody(freqs, opts) {
+  const ctx = ensureAudio(); if (!ctx) return;
+  opts = opts || {};
+  const step = opts.step || 0.12;
+  freqs.forEach((f, i) => tone(f, ctx.currentTime + i * step, opts.dur || 0.16, opts));
+}
+
+// --- 효과음 모음 ---
+function sfxClick()   { const c = ensureAudio(); if (!c) return; tone(620, c.currentTime, 0.08, { type: "triangle", gain: 0.3 }); }
+function sfxSelect()  { melody([523, 659, 784],       { type: "triangle", step: 0.08, dur: 0.14, gain: 0.35 }); }
+function sfxEquip()   { melody([523, 784],            { type: "triangle", step: 0.06, dur: 0.12, gain: 0.35 }); }
+function sfxUnequip() { melody([440, 294],            { type: "triangle", step: 0.06, dur: 0.12, gain: 0.30 }); }
+function sfxConfirm() { melody([659, 880],            { type: "triangle", step: 0.08, dur: 0.16, gain: 0.40 }); }
+function sfxResult(score) {
+  if (score >= 70) melody([523, 659, 784, 1047], { type: "triangle", step: 0.12, dur: 0.22, gain: 0.45 }); // 팡파레
+  else             melody([392, 349, 294],       { type: "sine",     step: 0.16, dur: 0.28, gain: 0.40 }); // 아쉬운 톤
+}
+
+// 걷는 동안 '또각또각' 발걸음
+function scheduleFootsteps() {
+  const ctx = ensureAudio(); if (!ctx) return;
+  const start = ctx.currentTime + 0.35;
+  for (let i = 0; i < 6; i++) tone(170, start + i * 0.48, 0.07, { type: "sine", gain: 0.22, glideTo: 110 });
+}
+
+// --- 드럼롤 ---
+function drumHit(time, freq, gainPeak) {
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
   osc.type = "sine";
   osc.frequency.setValueAtTime(freq, time);
   osc.frequency.exponentialRampToValueAtTime(freq * 0.6, time + 0.12);
   g.gain.setValueAtTime(0.0001, time);
   g.gain.exponentialRampToValueAtTime(gainPeak, time + 0.005);
   g.gain.exponentialRampToValueAtTime(0.0001, time + 0.14);
-  osc.connect(g).connect(ctx.destination);
+  osc.connect(g).connect(sfxGain);
   osc.start(time);
   osc.stop(time + 0.16);
 }
-
-// 마지막 '챙~' 심벌 소리 (잡음으로 만들기)
-function cymbal(ctx, time) {
+function cymbal(time) {
   const dur = 0.7;
-  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const buffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
-  }
-  const src = ctx.createBufferSource();
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+  const src = audioCtx.createBufferSource();
   src.buffer = buffer;
-  const hp = ctx.createBiquadFilter();
-  hp.type = "highpass";
-  hp.frequency.value = 5000;
-  const g = ctx.createGain();
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = "highpass"; hp.frequency.value = 5000;
+  const g = audioCtx.createGain();
   g.gain.setValueAtTime(0.4, time);
   g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
-  src.connect(hp).connect(g).connect(ctx.destination);
+  src.connect(hp).connect(g).connect(sfxGain);
   src.start(time);
   src.stop(time + dur);
 }
-
-// 두구두구… (점점 빨라지는 북소리) → 마지막에 '챙!'
-// 반환값: 전체 소리 길이(초)
 function playDrumroll() {
-  if (!audioCtx) return 1.6; // 소리를 못 켠 경우에도 최소 대기시간은 줘요
-  const ctx = audioCtx;
+  const ctx = ensureAudio(); if (!ctx) return 1.6;
+  duckBGM(true); // 드럼롤 동안 배경음악 살짝 줄이기
   const start = ctx.currentTime;
-  let t = start;
-  let interval = 0.13;
-  for (let i = 0; i < 26; i++) {
-    drumHit(ctx, t, 120 + i * 2, 0.4);
-    t += interval;
-    interval *= 0.955; // 조금씩 빨라짐 = 긴장감 UP
-  }
-  drumHit(ctx, t + 0.05, 90, 0.9); // 마지막 큰 북
-  cymbal(ctx, t + 0.05);           // 챙~
+  let t = start, interval = 0.13;
+  for (let i = 0; i < 26; i++) { drumHit(t, 120 + i * 2, 0.4); t += interval; interval *= 0.955; }
+  drumHit(t + 0.05, 90, 0.9);
+  cymbal(t + 0.05);
   return (t + 0.7) - start;
 }
+
+// --- BGM (배경음악): 부드러운 아르페지오 4마디(C-G-Am-F) 반복 ---
+let bgmOn = false, bgmBar = 0, bgmTimer = null;
+const BGM_CHORDS = [
+  [261.63, 329.63, 392.00], // C
+  [392.00, 493.88, 587.33], // G
+  [220.00, 261.63, 329.63], // Am
+  [174.61, 220.00, 261.63], // F
+];
+const BGM_STEP = 0.30;
+const BGM_BAR_SEC = 8 * BGM_STEP;
+function startBGM() {
+  if (bgmOn) return;
+  const ctx = ensureAudio(); if (!ctx) return;
+  bgmOn = true; bgmBar = 0;
+  playBGMBar();
+}
+function playBGMBar() {
+  if (!bgmOn) return;
+  const t0 = audioCtx.currentTime + 0.05;
+  const ch = BGM_CHORDS[bgmBar % 4];
+  const notes = [ch[0], ch[1], ch[2], ch[0] * 2, ch[2], ch[1], ch[0] * 2, ch[2]];
+  for (let i = 0; i < 8; i++) tone(notes[i], t0 + i * BGM_STEP, 0.28, { type: "triangle", gain: 0.5, dest: bgmGain });
+  tone(ch[0] / 2, t0, BGM_BAR_SEC * 0.9, { type: "sine", gain: 0.6, dest: bgmGain }); // 낮은 베이스
+  bgmBar++;
+  bgmTimer = setTimeout(playBGMBar, BGM_BAR_SEC * 1000);
+}
+function duckBGM(down) {
+  if (bgmGain) bgmGain.gain.value = down ? 0.05 : 0.16;
+}
+
+// --- 음소거 토글 버튼 ---
+function setMuted(m) {
+  soundMuted = m;
+  try { localStorage.setItem("dressup-muted", m ? "1" : "0"); } catch (e) {}
+  if (masterGain) masterGain.gain.value = m ? 0 : 1;
+  const btn = document.getElementById("sound-toggle");
+  if (btn) btn.textContent = m ? "🔇" : "🔊";
+}
+document.getElementById("sound-toggle").addEventListener("click", () => {
+  ensureAudio();
+  setMuted(!soundMuted);
+  if (!soundMuted) startBGM();
+});
+setMuted(soundMuted); // 시작 시 버튼 아이콘 반영
+
+// --- 어디든 첫 클릭이 일어나면 소리 시스템을 켜고 BGM 시작 ---
+function onFirstGesture() {
+  ensureAudio();
+  if (!soundMuted) startBGM();
+  document.removeEventListener("pointerdown", onFirstGesture);
+}
+document.addEventListener("pointerdown", onFirstGesture);
 
 // ===================================================================
 //  [5단계 핵심] 옷차림 평가하기
@@ -494,17 +597,21 @@ function showResult() {
   document.getElementById("result-verdict").textContent = result.verdict;
   document.getElementById("result-comment").textContent = `${currentCharacter.name}: “${result.comment}”`;
 
+  duckBGM(false);            // 드럼롤 끝났으니 배경음악 원래 크기로
+  sfxResult(result.score);   // 점수에 맞는 팡파레 / 아쉬운 소리
   document.getElementById("result-overlay").classList.remove("hidden");
 }
 
 // 결과 카드의 '옷 다시 입히기' 버튼
 document.getElementById("result-edit-button").addEventListener("click", () => {
+  sfxClick();
   document.getElementById("result-overlay").classList.add("hidden");
   showScreen("dressup");
 });
 
 // 결과 카드의 '다른 캐릭터' 버튼
 document.getElementById("result-again-button").addEventListener("click", () => {
+  sfxClick();
   document.getElementById("result-overlay").classList.add("hidden");
   showScreen("select");
 });
@@ -513,6 +620,7 @@ document.getElementById("result-again-button").addEventListener("click", () => {
 // 13) '캐릭터 다시 고르기' 버튼
 // -------------------------------------------------------------------
 document.getElementById("back-button").addEventListener("click", () => {
+  sfxClick();
   showScreen("select");
 });
 
