@@ -119,6 +119,82 @@ header h1 {
   margin-top: 2px;
 }
 
+/* ===== 요구 조건 체크리스트 ===== */
+.requirement-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-top: 16px;
+  width: 300px;
+  text-align: left;
+}
+
+.requirement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.requirement-count {
+  font-size: 13px;
+  color: #ff6fa5;
+  font-weight: 600;
+}
+
+/* 조건 한 줄 */
+.requirement {
+  font-size: 14px;
+  color: #888;
+  padding: 6px 0;
+  transition: color 0.15s;
+}
+
+/* 충족된 조건은 진하게 */
+.requirement.met {
+  color: #2e9e5b;
+  font-weight: 600;
+}
+
+.req-check { margin-right: 4px; }
+
+/* 완성 버튼 */
+.finish-button {
+  width: 100%;
+  margin-top: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: #ff6fa5;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.08s;
+}
+
+.finish-button:hover:not(:disabled) { background: #ff5697; transform: translateY(-1px); }
+
+/* 조건을 아직 다 못 맞추면 버튼이 회색으로 잠겨요 */
+.finish-button:disabled {
+  background: #e2e2e2;
+  color: #a5a5a5;
+  cursor: not-allowed;
+}
+
+.finish-message {
+  text-align: center;
+  color: #2e9e5b;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 10px 0 0;
+  min-height: 18px;
+}
+
 /* 게임 전체를 좌(무대) / 우(옷장) 두 칸으로 나눠요 */
 .game {
   display: flex;

@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>옷입히기 게임 (2단계)</title>
+  <title>옷입히기 게임 (3단계)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header>
     <h1>👗 옷입히기 게임</h1>
-    <p class="subtitle">2단계 · 캐릭터를 고르고 옷을 입혀요</p>
+    <p class="subtitle">3단계 · 조건에 맞게 옷을 입혀 완성하세요</p>
   </header>
 
   <!-- ============ 화면 ① 캐릭터 고르기 ============ -->
@@ -35,6 +35,17 @@
         지금 꾸미는 중: <strong id="current-name"></strong>
         <span id="current-personality" class="current-personality"></span>
       </p>
+
+      <!-- 요구 조건 체크리스트 (game.js가 채워줘요) -->
+      <div class="requirement-box">
+        <div class="requirement-header">
+          <span>💬 이런 옷을 원해요</span>
+          <span id="requirement-count" class="requirement-count"></span>
+        </div>
+        <div id="requirement-list"></div>
+        <button id="finish-button" class="finish-button" disabled>완성!</button>
+        <p id="finish-message" class="finish-message"></p>
+      </div>
     </section>
 
     <!-- 오른쪽: 옷장 -->
