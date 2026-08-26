@@ -11,7 +11,7 @@
 
   <header>
     <h1>👗 옷입히기 게임</h1>
-    <p class="subtitle">3단계 · 조건에 맞게 옷을 입혀 완성하세요</p>
+    <p class="subtitle">3단계 · 캐릭터의 말을 보고 어울리게 입혀주세요</p>
   </header>
 
   <!-- ============ 화면 ① 캐릭터 고르기 ============ -->
@@ -31,21 +31,15 @@
         <!-- 이 안(캐릭터 그림)은 game.js가 고른 캐릭터에 맞춰 채워줘요 -->
         <svg viewBox="0 0 300 400" class="character" id="character-svg"></svg>
       </div>
-      <p class="current-info">
-        지금 꾸미는 중: <strong id="current-name"></strong>
-        <span id="current-personality" class="current-personality"></span>
-      </p>
-
-      <!-- 요구 조건 체크리스트 (game.js가 채워줘요) -->
-      <div class="requirement-box">
-        <div class="requirement-header">
-          <span>💬 이런 옷을 원해요</span>
-          <span id="requirement-count" class="requirement-count"></span>
-        </div>
-        <div id="requirement-list"></div>
-        <button id="finish-button" class="finish-button" disabled>완성!</button>
-        <p id="finish-message" class="finish-message"></p>
+      <!-- 캐릭터 대사: 유저가 보는 '유일한 힌트' -->
+      <div class="speech-box">
+        <div class="speech-name" id="current-name"></div>
+        <div class="speech-quote" id="current-quote"></div>
       </div>
+
+      <!-- 완성 버튼: 언제든 누를 수 있어요 -->
+      <button id="finish-button" class="finish-button">완성! 무대로 보내기</button>
+      <p id="finish-message" class="finish-message"></p>
     </section>
 
     <!-- 오른쪽: 옷장 -->

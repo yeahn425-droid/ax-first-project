@@ -80,11 +80,12 @@ header h1 {
   margin-top: 6px;
 }
 
-.char-personality {
+.char-quote {
   font-size: 13px;
-  color: #999;
-  margin-top: 4px;
-  line-height: 1.4;
+  color: #777;
+  margin-top: 6px;
+  line-height: 1.5;
+  font-style: italic;
 }
 
 /* '캐릭터 다시 고르기' 버튼 */
@@ -119,55 +120,48 @@ header h1 {
   margin-top: 2px;
 }
 
-/* ===== 요구 조건 체크리스트 ===== */
-.requirement-box {
+/* ===== 캐릭터 대사 말풍선 (유저가 보는 유일한 힌트) ===== */
+.speech-box {
   background: #fff;
-  border-radius: 20px;
-  padding: 16px 18px;
+  border-radius: 18px;
+  padding: 14px 18px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   margin-top: 16px;
   width: 300px;
   text-align: left;
+  position: relative;
 }
 
-.requirement-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* 말풍선 위쪽 삼각형 꼬리 */
+.speech-box::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 40px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 9px solid #fff;
+}
+
+.speech-name {
   font-weight: 700;
   font-size: 15px;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
-.requirement-count {
-  font-size: 13px;
-  color: #ff6fa5;
-  font-weight: 600;
-}
-
-/* 조건 한 줄 */
-.requirement {
+.speech-quote {
   font-size: 14px;
-  color: #888;
-  padding: 6px 0;
-  transition: color 0.15s;
+  color: #666;
+  line-height: 1.5;
 }
 
-/* 충족된 조건은 진하게 */
-.requirement.met {
-  color: #2e9e5b;
-  font-weight: 600;
-}
-
-.req-check { margin-right: 4px; }
-
-/* 완성 버튼 */
+/* 완성 버튼 (언제든 누를 수 있어요) */
 .finish-button {
-  width: 100%;
-  margin-top: 12px;
+  width: 300px;
+  margin-top: 14px;
   border: none;
   border-radius: 999px;
-  padding: 12px;
+  padding: 13px;
   font-size: 16px;
   font-weight: 700;
   font-family: inherit;
@@ -177,21 +171,16 @@ header h1 {
   transition: background 0.15s, transform 0.08s;
 }
 
-.finish-button:hover:not(:disabled) { background: #ff5697; transform: translateY(-1px); }
-
-/* 조건을 아직 다 못 맞추면 버튼이 회색으로 잠겨요 */
-.finish-button:disabled {
-  background: #e2e2e2;
-  color: #a5a5a5;
-  cursor: not-allowed;
-}
+.finish-button:hover { background: #ff5697; transform: translateY(-1px); }
 
 .finish-message {
   text-align: center;
-  color: #2e9e5b;
+  color: #d1477e;
   font-weight: 600;
-  font-size: 14px;
-  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 10px auto 0;
+  width: 300px;
   min-height: 18px;
 }
 

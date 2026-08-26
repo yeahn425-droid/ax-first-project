@@ -1,67 +1,66 @@
 // ===================================================================
-//  게임의 두뇌 (game.js) - 3단계
-//  하는 일:
-//   1) 캐릭터 고르기
-//   2) 옷 입히기
-//   3) 캐릭터별 '요구 조건'을 실시간으로 체크하기   <-- 이번에 추가!
+//  게임의 두뇌 (game.js) - 3단계 (수정판)
+//
+//  핵심 설계:
+//   - 유저는 캐릭터의 '대사(quote)'만 보고 감으로 옷을 입혀요.
+//   - 상세 평가 기준은 'evalPrompt'에 숨겨둬요 (화면에 안 보임).
+//     이건 나중에 5단계에서 LLM(AI)에게 전달해서 채점받을 재료예요.
+//   - '완성!' 버튼은 언제든 누를 수 있어요. (유저가 "다 됐다" 하면 끝)
 // ===================================================================
 
 // -------------------------------------------------------------------
 // 1) 캐릭터 목록
-//    이번엔 'requirements'(요구 조건)가 새로 추가됐어요.
-//    조건 하나하나는 아래처럼 생겼어요:
-//      { text: "화면에 보일 설명", type: "조건종류", ... }
-//    조건 종류(type):
-//      - "fullyDressed"   : 모자·상의·신발을 모두 착용
-//      - "mustHaveTag"    : 이 태그를 가진 옷을 하나 이상 착용  (tag 필요)
-//      - "mustNotHaveTag" : 이 태그를 가진 옷을 입으면 안 됨     (tag 필요)
+//    - quote      : 유저에게 보이는 대사/힌트 (이걸 보고 유추해서 입힘)
+//    - evalPrompt : 유저에게 '안 보이는' 상세 평가 기준.
+//                   나중에 LLM에게 "이 기준으로 채점해줘" 하고 넘길 문장이에요.
 // -------------------------------------------------------------------
 const characters = [
   {
     id: "minji",
     name: "민지",
-    personality: "발랄하고 러블리한 걸 좋아해요",
+    quote: "오늘 소풍 가는 날이야! 화사하고 사랑스럽게 입혀줘 💕",
     skin: "#f7d7b5",
     hairColor: "#5b3b2e",
     hairStyle: "bob",
-    requirements: [
-      { text: "머리끝부터 발끝까지 다 입기", type: "fullyDressed" },
-      { text: "러블리한 아이템 착용하기", type: "mustHaveTag", tag: "cute" },
-      { text: "운동스러운 아이템은 사양할게요", type: "mustNotHaveTag", tag: "sporty" },
-    ],
+    // ↓↓↓ 유저에겐 안 보임 (LLM 평가용 프롬프트) ↓↓↓
+    evalPrompt:
+      "민지는 발랄하고 러블리한 스타일을 좋아합니다. 핑크·파스텔 계열이나 " +
+      "사랑스러운 아이템(원피스, 리본, 밀짚모자 등)에는 높은 점수를 주세요. " +
+      "운동화처럼 스포티하거나 투박한 아이템은 컨셉과 어울리지 않아 낮게 평가합니다. " +
+      "머리끝부터 발끝까지 갖춰 입었는지, 전체적으로 화사하게 통일됐는지도 함께 봐 주세요.",
   },
   {
     id: "haneul",
     name: "하늘",
-    personality: "차분하고 우아한 스타일을 좋아해요",
+    quote: "중요한 파티에 초대받았어. 우아하고 품격 있게 부탁해.",
     skin: "#f2c9a0",
     hairColor: "#2b2b2b",
     hairStyle: "long",
-    requirements: [
-      { text: "머리끝부터 발끝까지 다 입기", type: "fullyDressed" },
-      { text: "우아한 아이템 착용하기", type: "mustHaveTag", tag: "elegant" },
-      { text: "캐주얼한 아이템은 피하기", type: "mustNotHaveTag", tag: "casual" },
-    ],
+    evalPrompt:
+      "하늘은 차분하고 우아한 스타일을 좋아합니다. 왕관, 구두, 드레스처럼 " +
+      "격식 있고 우아한 아이템에는 높은 점수를 주세요. 캐주얼하거나 편한 느낌의 " +
+      "아이템(티셔츠, 운동화)은 파티 컨셉과 맞지 않아 낮게 평가합니다. " +
+      "전체적으로 통일감 있고 세련됐는지를 중점적으로 봐 주세요.",
   },
   {
     id: "luna",
     name: "루나",
-    personality: "개성 있고 톡톡 튀는 걸 좋아해요",
+    quote: "오늘은 나답게! 남들과 다른, 톡톡 튀는 스타일이면 좋겠어 ✨",
     skin: "#f9dcc4",
     hairColor: "#d46aa0",
     hairStyle: "short",
-    requirements: [
-      { text: "머리끝부터 발끝까지 다 입기", type: "fullyDressed" },
-      { text: "개성 있는 아이템 착용하기", type: "mustHaveTag", tag: "unique" },
-      { text: "너무 우아한 건 재미없어요", type: "mustNotHaveTag", tag: "elegant" },
-    ],
+    evalPrompt:
+      "루나는 개성 있고 톡톡 튀는 스타일을 좋아합니다. 남들과 다른 조합이나 " +
+      "포인트가 되는 개성 있는 아이템에는 높은 점수를 주세요. 너무 무난하거나 " +
+      "지나치게 격식만 차린 조합은 재미없다고 느껴 낮게 평가합니다. " +
+      "과감하고 자기다운 매치인지, 밋밋하지 않은지를 봐 주세요.",
   },
 ];
 
 // -------------------------------------------------------------------
 // 2) 옷장 데이터
-//    이번엔 옷마다 'tags'(성격 태그)가 추가됐어요.
-//    이 태그로 캐릭터의 조건을 맞췄는지 판단해요.
+//    옷마다 'tags'(성격 태그)는 그대로 둬요.
+//    이건 이제 화면에 안 보이고, 나중에 AI 평가를 도울 '내부 정보'예요.
 // -------------------------------------------------------------------
 const wardrobe = [
   // ---- 모자 ----
@@ -125,7 +124,7 @@ let currentCharacter = null;
 const wearing = { hat: null, top: null, shoes: null };
 
 // -------------------------------------------------------------------
-// 4) 캐릭터 그림(임시) 만들기 (2단계와 동일)
+// 4) 캐릭터 그림(임시) 만들기
 // -------------------------------------------------------------------
 function renderCharacterBase(char, includeLayers) {
   let hairBack = "";
@@ -170,7 +169,8 @@ function showScreen(name) {
 }
 
 // -------------------------------------------------------------------
-// 6) 캐릭터 고르는 화면 그리기 (2단계와 동일)
+// 6) 캐릭터 고르는 화면 그리기
+//    여기서 유저는 캐릭터의 '대사(quote)'를 보고 어떤 캐릭터인지 감을 잡아요.
 // -------------------------------------------------------------------
 function drawCharacterSelect() {
   const list = document.getElementById("character-list");
@@ -181,7 +181,7 @@ function drawCharacterSelect() {
     card.innerHTML = `
       <svg viewBox="0 0 300 400" class="char-preview">${renderCharacterBase(char, false)}</svg>
       <div class="char-name">${char.name}</div>
-      <div class="char-personality">${char.personality}</div>`;
+      <div class="char-quote">“${char.quote}”</div>`;
     card.addEventListener("click", () => selectCharacter(char));
     list.appendChild(card);
   }
@@ -196,18 +196,19 @@ function selectCharacter(char) {
   wearing.top = null;
   wearing.shoes = null;
 
+  // 입히는 화면 상단에 캐릭터 이름과 '대사'를 보여줘요 (유일한 힌트!)
   document.getElementById("current-name").textContent = char.name;
-  document.getElementById("current-personality").textContent = char.personality;
+  document.getElementById("current-quote").textContent = `“${char.quote}”`;
   document.getElementById("character-svg").innerHTML = renderCharacterBase(char, true);
 
+  document.getElementById("finish-message").textContent = "";
   drawWardrobe();
   dressCharacter();
-  drawRequirements(); // 요구 조건 체크리스트 그리기
   showScreen("dressup");
 }
 
 // -------------------------------------------------------------------
-// 8) 옷장(버튼 목록) 그리기 (2단계와 동일)
+// 8) 옷장(버튼 목록) 그리기
 // -------------------------------------------------------------------
 function drawWardrobe() {
   const list = document.getElementById("wardrobe-list");
@@ -246,7 +247,6 @@ function clickItem(item) {
   }
   dressCharacter();
   drawWardrobe();
-  drawRequirements(); // 옷이 바뀌었으니 조건도 다시 체크!
 }
 
 // -------------------------------------------------------------------
@@ -266,7 +266,8 @@ function dressCharacter() {
 }
 
 // -------------------------------------------------------------------
-// 11) [3단계 핵심] 지금 입은 옷들을 실제 옷 정보로 가져오는 도우미
+// 11) 지금 입은 옷 목록을 가져오는 도우미
+//     (나중에 LLM에게 "이런 옷을 입혔어요" 하고 알려줄 때 써요.)
 // -------------------------------------------------------------------
 function getWornItems() {
   const worn = [];
@@ -277,77 +278,29 @@ function getWornItems() {
   return worn;
 }
 
-// 지금 입은 옷들 중에 이 태그를 가진 게 있는지 확인
-function wornHasTag(tag) {
-  return getWornItems().some((item) => item.tags.includes(tag));
-}
-
 // -------------------------------------------------------------------
-// 12) [3단계 핵심] 조건 하나가 충족됐는지 판단
-// -------------------------------------------------------------------
-function isRequirementMet(req) {
-  if (req.type === "fullyDressed") {
-    return wearing.hat && wearing.top && wearing.shoes; // 셋 다 입었는지
-  }
-  if (req.type === "mustHaveTag") {
-    return wornHasTag(req.tag); // 그 태그를 가진 옷을 입었는지
-  }
-  if (req.type === "mustNotHaveTag") {
-    return !wornHasTag(req.tag); // 그 태그를 가진 옷을 '안' 입었는지
-  }
-  return false;
-}
-
-// -------------------------------------------------------------------
-// 13) [3단계 핵심] 요구 조건 체크리스트를 화면에 그리기
-// -------------------------------------------------------------------
-function drawRequirements() {
-  const box = document.getElementById("requirement-list");
-  box.innerHTML = "";
-
-  const reqs = currentCharacter.requirements;
-  let metCount = 0;
-
-  for (const req of reqs) {
-    const met = isRequirementMet(req);
-    if (met) metCount++;
-    const row = document.createElement("div");
-    row.className = "requirement" + (met ? " met" : "");
-    row.innerHTML = `<span class="req-check">${met ? "✅" : "⬜"}</span> ${req.text}`;
-    box.appendChild(row);
-  }
-
-  // 충족 개수 안내 (예: "3개 중 2개 충족")
-  const allMet = metCount === reqs.length;
-  document.getElementById("requirement-count").textContent =
-    `${reqs.length}개 중 ${metCount}개 충족`;
-
-  // 완성 버튼: 모든 조건을 맞췄을 때만 켜져요
-  const finishButton = document.getElementById("finish-button");
-  finishButton.disabled = !allMet;
-
-  // 안내 메시지 초기화
-  document.getElementById("finish-message").textContent = "";
-}
-
-// -------------------------------------------------------------------
-// 14) '완성!' 버튼을 눌렀을 때
-//     (지금은 안내만. 다음 4단계에서 런웨이로 이어질 자리예요.)
+// 12) '완성!' 버튼 - 언제든 누를 수 있어요.
+//     지금은 안내만 보여줘요. (다음 단계에서 런웨이 → AI 평가로 이어짐)
+//     아래 주석은 5단계에서 LLM에게 넘길 재료의 예시예요:
+//       - currentCharacter.evalPrompt  (숨은 평가 기준)
+//       - getWornItems()               (유저가 입힌 옷들)
 // -------------------------------------------------------------------
 document.getElementById("finish-button").addEventListener("click", () => {
+  const worn = getWornItems();
+  const wornNames = worn.length ? worn.map((it) => it.name).join(", ") : "아무것도 안 입음";
   document.getElementById("finish-message").textContent =
-    `🎉 ${currentCharacter.name}의 조건을 모두 맞췄어요! (다음 단계: 런웨이)`;
+    `완성! 입힌 옷: ${wornNames} · 이제 이 옷차림을 ${currentCharacter.name}가 평가할 거예요 (다음 단계: 런웨이 → AI 평가)`;
 });
 
 // -------------------------------------------------------------------
-// 15) '캐릭터 다시 고르기' 버튼
+// 13) '캐릭터 다시 고르기' 버튼
 // -------------------------------------------------------------------
 document.getElementById("back-button").addEventListener("click", () => {
   showScreen("select");
 });
 
 // -------------------------------------------------------------------
-// 16) 게임 시작!
+// 14) 게임 시작!
 // -------------------------------------------------------------------
 drawCharacterSelect();
 showScreen("select");
