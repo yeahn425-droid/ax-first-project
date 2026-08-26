@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>옷입히기 게임 (3단계)</title>
+  <title>옷입히기 게임 (4단계)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header>
     <h1>👗 옷입히기 게임</h1>
-    <p class="subtitle">3단계 · 캐릭터의 말을 보고 어울리게 입혀주세요</p>
+    <p class="subtitle">4단계 · 완성하면 캐릭터가 런웨이를 걸어요</p>
   </header>
 
   <!-- ============ 화면 ① 캐릭터 고르기 ============ -->
@@ -48,6 +48,33 @@
       <div id="wardrobe-list"></div>
     </section>
 
+  </section>
+
+  <!-- ============ 화면 ③ 런웨이 ============ -->
+  <section id="screen-runway" class="hidden">
+    <h2 class="screen-title"><span id="runway-name"></span>의 런웨이 무대 ✨</h2>
+
+    <div class="runway-stage">
+      <!-- 무대 조명 -->
+      <div class="runway-lights"></div>
+      <!-- 바닥 카펫 (원근감 있는 사다리꼴) -->
+      <div class="runway-carpet"></div>
+
+      <!-- 걷는 캐릭터: walker(앞으로 다가오기) 안에 bob(위아래 흔들림) -->
+      <div class="walker" id="walker">
+        <div class="walker-bob">
+          <svg viewBox="0 0 300 400" class="runway-character" id="runway-svg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- 걷기가 끝나면 나타나는 버튼들 -->
+    <div class="runway-controls hidden" id="runway-controls">
+      <button id="rewalk-button" class="ghost-button">🔁 다시 걷기</button>
+      <button id="runway-edit-button" class="ghost-button">👗 옷 고치기</button>
+      <button id="evaluate-button" class="finish-button">AI 평가 받기 →</button>
+    </div>
+    <p id="runway-message" class="finish-message"></p>
   </section>
 
   <script src="game.js"></script>

@@ -283,3 +283,108 @@ header h1 {
   font-size: 12px;
   color: #555;
 }
+
+/* ============================================================= */
+/* ===== 화면 ③ 런웨이 ===== */
+/* ============================================================= */
+.runway-stage {
+  position: relative;
+  max-width: 640px;
+  height: 460px;
+  margin: 16px auto 0;
+  border-radius: 24px;
+  overflow: hidden;
+  /* 어두운 무대 + 가운데 스포트라이트 */
+  background:
+    radial-gradient(ellipse 300px 200px at 50% 8%, rgba(255,240,200,0.35), transparent 70%),
+    linear-gradient(180deg, #2a2140 0%, #3b2f56 55%, #241d38 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* 무대 조명 점들 */
+.runway-lights {
+  position: absolute;
+  top: 10px; left: 0; right: 0;
+  height: 30px;
+  background:
+    radial-gradient(circle 6px at 15% 50%, #ffe07a, transparent 70%),
+    radial-gradient(circle 6px at 35% 50%, #ff9ecb, transparent 70%),
+    radial-gradient(circle 6px at 50% 50%, #fff2b0, transparent 70%),
+    radial-gradient(circle 6px at 65% 50%, #ff9ecb, transparent 70%),
+    radial-gradient(circle 6px at 85% 50%, #ffe07a, transparent 70%);
+}
+
+/* 바닥 카펫: 안쪽으로 갈수록 좁아지는 사다리꼴 (원근감) */
+.runway-carpet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 360px;
+  background: linear-gradient(180deg, #d9548a 0%, #ff8fbb 100%);
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  opacity: 0.92;
+}
+
+/* 걷는 캐릭터를 담는 칸 (앞으로 다가오는 애니메이션) */
+.walker {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translate(-50%, 0) scale(1); /* 도착 지점(기본 상태) */
+  transform-origin: bottom center;
+}
+
+.walker.walking {
+  animation: approach 3.2s ease-out;
+}
+
+/* 위아래로 살짝 흔들며 걷는 느낌 (걷는 동안만) */
+.walker.walking .walker-bob {
+  animation: walkbob 0.5s linear infinite;
+}
+
+.runway-character {
+  width: 210px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 10px rgba(0, 0, 0, 0.3));
+}
+
+/* 무대 안쪽 멀리서 → 앞으로 커지며 다가오기 */
+@keyframes approach {
+  from { transform: translate(-50%, -175px) scale(0.35); opacity: 0.15; }
+  to   { transform: translate(-50%, 0) scale(1);         opacity: 1; }
+}
+
+/* 한 걸음 한 걸음 흔들림 */
+@keyframes walkbob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50%      { transform: translateY(-6px) rotate(1.5deg); }
+}
+
+/* 런웨이 버튼 묶음 */
+.runway-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.runway-controls .finish-button { width: auto; padding: 13px 24px; margin-top: 0; }
+
+/* 보조 버튼 (다시 걷기 / 옷 고치기) */
+.ghost-button {
+  border: 2px solid #ffc2d6;
+  background: #fff;
+  color: #d1477e;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 11px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ghost-button:hover { background: #fff0f6; }

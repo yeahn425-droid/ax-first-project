@@ -125,8 +125,10 @@ const wearing = { hat: null, top: null, shoes: null };
 
 // -------------------------------------------------------------------
 // 4) 캐릭터 그림(임시) 만들기
+//    - includeLayers=true : 옷을 걸 '빈 층'을 id와 함께 넣어요 (입히기 화면용)
+//    - baked 를 주면       : 그 옷 그림을 아예 박아서 그려요 (런웨이/카드용)
 // -------------------------------------------------------------------
-function renderCharacterBase(char, includeLayers) {
+function renderCharacterBase(char, includeLayers, baked) {
   let hairBack = "";
   let hairFront = "";
   if (char.hairStyle === "bob") {
@@ -139,9 +141,10 @@ function renderCharacterBase(char, includeLayers) {
     hairFront = `<path d="M106 92 Q104 48 150 48 Q196 48 194 92 Q194 72 150 70 Q106 72 106 92 Z" fill="${char.hairColor}"/>`;
   }
 
-  const shoesLayer = includeLayers ? `<g id="layer-shoes"></g>` : "";
-  const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : "";
-  const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : "";
+  const b = baked || { hat: "", top: "", shoes: "" };
+  const shoesLayer = includeLayers ? `<g id="layer-shoes"></g>` : b.shoes;
+  const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : b.top;
+  const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : b.hat;
 
   return `
     <rect x="128" y="255" width="18" height="90" rx="9" fill="${char.skin}"/>
@@ -166,6 +169,7 @@ function renderCharacterBase(char, includeLayers) {
 function showScreen(name) {
   document.getElementById("screen-select").classList.toggle("hidden", name !== "select");
   document.getElementById("screen-dressup").classList.toggle("hidden", name !== "dressup");
+  document.getElementById("screen-runway").classList.toggle("hidden", name !== "runway");
 }
 
 // -------------------------------------------------------------------
@@ -279,17 +283,67 @@ function getWornItems() {
 }
 
 // -------------------------------------------------------------------
-// 12) '완성!' 버튼 - 언제든 누를 수 있어요.
-//     지금은 안내만 보여줘요. (다음 단계에서 런웨이 → AI 평가로 이어짐)
-//     아래 주석은 5단계에서 LLM에게 넘길 재료의 예시예요:
-//       - currentCharacter.evalPrompt  (숨은 평가 기준)
-//       - getWornItems()               (유저가 입힌 옷들)
+// 12) 옷을 입은 캐릭터를 '통째로' 그리기 (런웨이용)
+//     입히기 화면에선 옷을 층(layer)에 넣지만,
+//     런웨이에선 지금 입은 옷을 그림에 아예 박아서 한 장으로 만들어요.
 // -------------------------------------------------------------------
-document.getElementById("finish-button").addEventListener("click", () => {
-  const worn = getWornItems();
-  const wornNames = worn.length ? worn.map((it) => it.name).join(", ") : "아무것도 안 입음";
-  document.getElementById("finish-message").textContent =
-    `완성! 입힌 옷: ${wornNames} · 이제 이 옷차림을 ${currentCharacter.name}가 평가할 거예요 (다음 단계: 런웨이 → AI 평가)`;
+function renderDressed(char) {
+  const baked = { hat: "", top: "", shoes: "" };
+  for (const category of ["hat", "top", "shoes"]) {
+    const id = wearing[category];
+    if (id) baked[category] = wardrobe.find((it) => it.id === id).onBody;
+  }
+  return renderCharacterBase(char, false, baked);
+}
+
+// -------------------------------------------------------------------
+// 13) [4단계 핵심] '완성!' → 런웨이 무대로 보내기
+// -------------------------------------------------------------------
+function startRunway() {
+  // 지금 입은 모습 그대로 런웨이 캐릭터를 그려요
+  document.getElementById("runway-svg").innerHTML = renderDressed(currentCharacter);
+  document.getElementById("runway-name").textContent = currentCharacter.name;
+
+  showScreen("runway");
+  playWalk();
+}
+
+// 걷기 애니메이션을 재생(또는 다시 재생)하는 함수
+function playWalk() {
+  const walker = document.getElementById("walker");
+  const controls = document.getElementById("runway-controls");
+
+  controls.classList.add("hidden");     // 걷는 동안엔 버튼 숨김
+
+  // 애니메이션을 처음부터 다시 시작시키는 기법:
+  // 클래스를 뗐다가 → 브라우저가 한 번 그리게 한 뒤 → 다시 붙여요.
+  walker.classList.remove("walking");
+  void walker.offsetWidth; // (브라우저에게 "지금 상태를 반영해" 하고 알리는 한 줄)
+  walker.classList.add("walking");
+}
+
+// 걷기가 끝나면(무대 앞 도착) 흔들림을 멈추고 버튼들을 보여줘요
+document.getElementById("walker").addEventListener("animationend", () => {
+  document.getElementById("walker").classList.remove("walking"); // 위아래 흔들림 정지 → 포즈
+  document.getElementById("runway-controls").classList.remove("hidden");
+});
+
+// '완성!' 버튼 → 런웨이 시작
+document.getElementById("finish-button").addEventListener("click", startRunway);
+
+// '다시 걷기' 버튼
+document.getElementById("rewalk-button").addEventListener("click", playWalk);
+
+// '옷 고치기' 버튼 → 입히기 화면으로 (지금 입은 옷 그대로 유지)
+document.getElementById("runway-edit-button").addEventListener("click", () => {
+  showScreen("dressup");
+});
+
+// 'AI 평가 받기' 버튼 (지금은 안내만. 5단계에서 진짜 평가로 이어져요.)
+document.getElementById("evaluate-button").addEventListener("click", () => {
+  const wornNames = getWornItems().map((it) => it.name).join(", ") || "아무것도 안 입음";
+  document.getElementById("runway-message").textContent =
+    `🔎 (다음 5단계) "${wornNames}" 옷차림을 ${currentCharacter.name}가 평가합니다.`;
 });
 
 // -------------------------------------------------------------------
