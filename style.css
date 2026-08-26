@@ -1,0 +1,128 @@
+/* 이 파일은 '꾸미기' 담당이에요. 색깔, 크기, 배치를 정해요. */
+
+/* 기본값: 폰트, 배경, 여백 */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  background: linear-gradient(160deg, #fdf1f5 0%, #eef3ff 100%);
+  color: #333;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: #8a8a8a;
+  font-size: 15px;
+}
+
+/* 게임 전체를 좌(무대) / 우(옷장) 두 칸으로 나눠요 */
+.game {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ===== 왼쪽: 무대 ===== */
+.stage-area {
+  text-align: center;
+}
+
+.stage {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  width: 300px;
+}
+
+.character {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hint {
+  color: #a0a0a0;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* ===== 오른쪽: 옷장 ===== */
+.wardrobe {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  width: 320px;
+}
+
+.wardrobe h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+/* 옷 종류 묶음(모자/상의/신발)의 제목 */
+.category-title {
+  font-size: 14px;
+  color: #9a9a9a;
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+
+/* 옷 버튼들을 격자로 배치 */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* 옷 하나하나 버튼 */
+.item {
+  border: 2px solid #eee;
+  background: #fafafa;
+  border-radius: 16px;
+  padding: 10px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.08s, border-color 0.15s, background 0.15s;
+}
+
+.item:hover {
+  transform: translateY(-2px);
+  border-color: #ffc2d6;
+}
+
+/* 지금 입고 있는 옷은 테두리를 강조해요 */
+.item.selected {
+  border-color: #ff6fa5;
+  background: #fff0f6;
+}
+
+.item svg {
+  width: 46px;
+  height: 46px;
+  display: block;
+  margin: 0 auto 4px;
+}
+
+.item-name {
+  font-size: 12px;
+  color: #555;
+}
