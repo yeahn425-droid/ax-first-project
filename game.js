@@ -18,6 +18,9 @@ const characters = [
   {
     id: "minji",
     name: "민지",
+    // 진짜 캐릭터 얼굴 이미지 경로. 비워두면 임시 얼굴을 써요.
+    // 예) faceImage: "images/minji.png",
+    faceImage: "",
     quote: "오늘 소풍 가는 날이야! 화사하고 사랑스럽게 입혀줘 💕",
     skin: "#f7d7b5",
     hairColor: "#5b3b2e",
@@ -35,6 +38,7 @@ const characters = [
   {
     id: "haneul",
     name: "하늘",
+    faceImage: "",
     quote: "중요한 파티에 초대받았어. 우아하고 품격 있게 부탁해.",
     skin: "#f2c9a0",
     hairColor: "#2b2b2b",
@@ -50,6 +54,7 @@ const characters = [
   {
     id: "luna",
     name: "루나",
+    faceImage: "",
     quote: "오늘은 나답게! 남들과 다른, 톡톡 튀는 스타일이면 좋겠어 ✨",
     skin: "#f9dcc4",
     hairColor: "#d46aa0",
@@ -131,43 +136,73 @@ let currentCharacter = null;
 const wearing = { hat: null, top: null, shoes: null };
 
 // -------------------------------------------------------------------
-// 4) 캐릭터 그림(임시) 만들기
+// 4) 캐릭터 그림 만들기
+//    구조: [공용 근육질 몸통] + [머리 자리]
+//      - 머리 자리(head): 진짜 캐릭터 이미지(faceImage)가 있으면 그 이미지를,
+//                         없으면 임시 얼굴 그림을 넣어요.
+//    이렇게 하면 '얼굴만 캐릭터, 목 아래는 공용 사람 몸' 이 돼요.
+//    (몸이 공용이라 옷 하나만 그려도 모든 캐릭터에 다 맞아요!)
+//
 //    - includeLayers=true : 옷을 걸 '빈 층'을 id와 함께 넣어요 (입히기 화면용)
 //    - baked 를 주면       : 그 옷 그림을 아예 박아서 그려요 (런웨이/카드용)
 // -------------------------------------------------------------------
 function renderCharacterBase(char, includeLayers, baked) {
-  let hairBack = "";
-  let hairFront = "";
-  if (char.hairStyle === "bob") {
-    hairFront = `<path d="M104 96 Q100 46 150 46 Q200 46 196 96 Q196 118 188 124 L188 66 Q150 60 112 66 L112 124 Q104 118 104 96 Z" fill="${char.hairColor}"/>`;
-  } else if (char.hairStyle === "long") {
-    hairBack = `<path d="M104 90 Q100 150 108 168 L124 168 L120 96 Z" fill="${char.hairColor}"/>
-                <path d="M196 90 Q200 150 192 168 L176 168 L180 96 Z" fill="${char.hairColor}"/>`;
-    hairFront = `<path d="M104 96 Q100 44 150 44 Q200 44 196 96 Q196 74 150 68 Q104 74 104 96 Z" fill="${char.hairColor}"/>`;
-  } else { // short
-    hairFront = `<path d="M106 92 Q104 48 150 48 Q196 48 194 92 Q194 72 150 70 Q106 72 106 92 Z" fill="${char.hairColor}"/>`;
-  }
-
   const b = baked || { hat: "", top: "", shoes: "" };
   const shoesLayer = includeLayers ? `<g id="layer-shoes"></g>` : b.shoes;
   const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : b.top;
   const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : b.hat;
 
+  // 머리 자리: 진짜 이미지가 있으면 이미지, 없으면 임시 얼굴
+  const head = char.faceImage
+    ? `<image href="${char.faceImage}" x="98" y="34" width="104" height="112" preserveAspectRatio="xMidYMid meet"/>`
+    : renderFallbackFace(char);
+
   return `
-    <rect x="128" y="255" width="18" height="90" rx="9" fill="${char.skin}"/>
-    <rect x="154" y="255" width="18" height="90" rx="9" fill="${char.skin}"/>
+    <!-- 다리 (튼튼하게) -->
+    <rect x="126" y="255" width="22" height="92" rx="11" fill="${char.skin}"/>
+    <rect x="152" y="255" width="22" height="92" rx="11" fill="${char.skin}"/>
     ${shoesLayer}
-    <rect x="95" y="150" width="16" height="80" rx="8" fill="${char.skin}"/>
-    <rect x="189" y="150" width="16" height="80" rx="8" fill="${char.skin}"/>
-    <path d="M110 150 Q150 138 190 150 L182 258 L118 258 Z" fill="${char.skin}"/>
+    <!-- 근육질 팔 (이두박근 포함) -->
+    <rect x="88"  y="150" width="20" height="84" rx="10" fill="${char.skin}"/>
+    <ellipse cx="98"  cy="172" rx="14" ry="18" fill="${char.skin}"/>
+    <circle cx="98"  cy="240" r="10" fill="${char.skin}"/>
+    <rect x="192" y="150" width="20" height="84" rx="10" fill="${char.skin}"/>
+    <ellipse cx="202" cy="172" rx="14" ry="18" fill="${char.skin}"/>
+    <circle cx="202" cy="240" r="10" fill="${char.skin}"/>
+    <!-- 넓은 어깨 + 우람한 몸통 -->
+    <path d="M106 152 Q150 134 194 152 L182 258 L118 258 Z" fill="${char.skin}"/>
+    <!-- 근육 음영 (가슴/복근) -->
+    <path d="M150 158 L150 210" stroke="rgba(0,0,0,0.08)" stroke-width="3" fill="none"/>
+    <path d="M126 168 Q140 186 150 172" stroke="rgba(0,0,0,0.08)" stroke-width="3" fill="none"/>
+    <path d="M174 168 Q160 186 150 172" stroke="rgba(0,0,0,0.08)" stroke-width="3" fill="none"/>
+    <path d="M132 212 L168 212 M134 228 L166 228" stroke="rgba(0,0,0,0.07)" stroke-width="2.5" fill="none"/>
     ${topLayer}
+    <!-- 목 -->
+    <rect x="137" y="126" width="26" height="28" rx="9" fill="${char.skin}"/>
+    <!-- 머리 (얼굴 그림 또는 캐릭터 이미지) -->
+    ${head}
+    ${hatLayer}`;
+}
+
+// 임시 얼굴 (진짜 캐릭터 이미지가 아직 없을 때 대신 그리는 그림)
+function renderFallbackFace(char) {
+  let hairBack = "", hairFront = "";
+  if (char.hairStyle === "bob") {
+    hairFront = `<path d="M104 96 Q100 46 150 46 Q200 46 196 96 Q196 118 188 124 L188 66 Q150 60 112 66 L112 124 Q104 118 104 96 Z" fill="${char.hairColor}"/>`;
+  } else if (char.hairStyle === "long") {
+    hairBack = `<path d="M106 92 Q104 140 112 156 L124 156 L120 96 Z" fill="${char.hairColor}"/>
+                <path d="M194 92 Q196 140 188 156 L176 156 L180 96 Z" fill="${char.hairColor}"/>`;
+    hairFront = `<path d="M104 96 Q100 44 150 44 Q200 44 196 96 Q196 74 150 68 Q104 74 104 96 Z" fill="${char.hairColor}"/>`;
+  } else {
+    hairFront = `<path d="M106 92 Q104 48 150 48 Q196 48 194 92 Q194 72 150 70 Q106 72 106 92 Z" fill="${char.hairColor}"/>`;
+  }
+  return `
     ${hairBack}
     <circle cx="150" cy="95" r="46" fill="${char.skin}"/>
     <circle cx="135" cy="95" r="4" fill="#3a2b25"/>
     <circle cx="165" cy="95" r="4" fill="#3a2b25"/>
     <path d="M138 112 Q150 122 162 112" stroke="#b56a5a" stroke-width="3" fill="none" stroke-linecap="round"/>
-    ${hairFront}
-    ${hatLayer}`;
+    ${hairFront}`;
 }
 
 // -------------------------------------------------------------------
