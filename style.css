@@ -27,6 +27,98 @@ header h1 {
   font-size: 15px;
 }
 
+/* 숨김 처리: 이 클래스가 붙으면 화면에서 안 보여요 */
+.hidden { display: none !important; }
+
+/* 화면 제목 (예: "누구를 꾸며줄까요?") */
+.screen-title {
+  text-align: center;
+  font-size: 22px;
+  margin: 16px 0 4px;
+}
+
+/* ===== 화면 ①: 캐릭터 고르기 ===== */
+.character-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 24px 16px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 캐릭터 카드 하나 */
+.char-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 12px 12px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  width: 200px;
+  cursor: pointer;
+  text-align: center;
+  border: 3px solid transparent;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.char-card:hover {
+  transform: translateY(-4px);
+  border-color: #ff6fa5;
+  box-shadow: 0 16px 36px rgba(255, 111, 165, 0.25);
+}
+
+.char-preview {
+  width: 130px;
+  height: 174px;
+  display: block;
+  margin: 0 auto;
+}
+
+.char-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.char-personality {
+  font-size: 13px;
+  color: #999;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* '캐릭터 다시 고르기' 버튼 */
+.back-button {
+  display: inline-block;
+  margin-bottom: 12px;
+  border: none;
+  background: #ffe3ee;
+  color: #d1477e;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.back-button:hover { background: #ffd0e2; }
+
+/* 지금 꾸미는 캐릭터 안내 */
+.current-info {
+  color: #666;
+  font-size: 14px;
+  margin-top: 14px;
+}
+
+.current-personality {
+  display: block;
+  color: #aaa;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
 /* 게임 전체를 좌(무대) / 우(옷장) 두 칸으로 나눠요 */
 .game {
   display: flex;
