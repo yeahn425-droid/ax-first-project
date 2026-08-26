@@ -388,3 +388,95 @@ header h1 {
 }
 
 .ghost-button:hover { background: #fff0f6; }
+
+/* ============================================================= */
+/* ===== 결과 카드 (평가 팝업) ===== */
+/* ============================================================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 45, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.result-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 28px 26px 20px;
+  width: 340px;
+  max-width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  animation: popin 0.3s ease-out;
+}
+
+/* 팝업이 톡 튀어나오는 효과 */
+@keyframes popin {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.result-tag {
+  display: inline-block;
+  background: #fff0f6;
+  color: #d1477e;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.result-emoji {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.result-score {
+  margin-top: 6px;
+  font-size: 52px;
+  font-weight: 800;
+  color: #ff5697;
+  line-height: 1;
+}
+
+.result-score-unit {
+  font-size: 22px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.result-verdict {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.result-comment {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  background: #faf7fb;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.result-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.result-buttons .finish-button { width: auto; padding: 12px 20px; margin-top: 0; }
+
+.result-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: #b5b5b5;
+}

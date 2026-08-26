@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>옷입히기 게임 (4단계)</title>
+  <title>옷입히기 게임 (완성!)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <header>
     <h1>👗 옷입히기 게임</h1>
-    <p class="subtitle">4단계 · 완성하면 캐릭터가 런웨이를 걸어요</p>
+    <p class="subtitle">5단계 · 캐릭터가 옷차림을 평가해줘요</p>
   </header>
 
   <!-- ============ 화면 ① 캐릭터 고르기 ============ -->
@@ -76,6 +76,24 @@
     </div>
     <p id="runway-message" class="finish-message"></p>
   </section>
+
+  <!-- ============ 결과 카드 (평가 팝업) ============ -->
+  <div id="result-overlay" class="overlay hidden">
+    <div class="result-card">
+      <div class="result-tag">심사 결과</div>
+      <div class="result-emoji" id="result-emoji"></div>
+      <div class="result-score">
+        <span id="result-score-num">0</span><span class="result-score-unit">점</span>
+      </div>
+      <div class="result-verdict" id="result-verdict"></div>
+      <p class="result-comment" id="result-comment"></p>
+      <div class="result-buttons">
+        <button id="result-again-button" class="ghost-button">다른 캐릭터</button>
+        <button id="result-edit-button" class="finish-button">옷 다시 입히기</button>
+      </div>
+      <p class="result-note">※ 지금은 임시 평가예요. 나중에 진짜 AI로 바뀌어요.</p>
+    </div>
+  </div>
 
   <script src="game.js"></script>
 </body>

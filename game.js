@@ -28,6 +28,9 @@ const characters = [
       "사랑스러운 아이템(원피스, 리본, 밀짚모자 등)에는 높은 점수를 주세요. " +
       "운동화처럼 스포티하거나 투박한 아이템은 컨셉과 어울리지 않아 낮게 평가합니다. " +
       "머리끝부터 발끝까지 갖춰 입었는지, 전체적으로 화사하게 통일됐는지도 함께 봐 주세요.",
+    // ↓↓↓ '가짜 평가'가 점수를 계산할 때 쓰는 내부 기준 (나중에 LLM 쓰면 필요 없어짐)
+    likeTags: ["cute"],
+    dislikeTags: ["sporty"],
   },
   {
     id: "haneul",
@@ -41,6 +44,8 @@ const characters = [
       "격식 있고 우아한 아이템에는 높은 점수를 주세요. 캐주얼하거나 편한 느낌의 " +
       "아이템(티셔츠, 운동화)은 파티 컨셉과 맞지 않아 낮게 평가합니다. " +
       "전체적으로 통일감 있고 세련됐는지를 중점적으로 봐 주세요.",
+    likeTags: ["elegant"],
+    dislikeTags: ["casual"],
   },
   {
     id: "luna",
@@ -54,6 +59,8 @@ const characters = [
       "포인트가 되는 개성 있는 아이템에는 높은 점수를 주세요. 너무 무난하거나 " +
       "지나치게 격식만 차린 조합은 재미없다고 느껴 낮게 평가합니다. " +
       "과감하고 자기다운 매치인지, 밋밋하지 않은지를 봐 주세요.",
+    likeTags: ["unique"],
+    dislikeTags: ["elegant"],
   },
 ];
 
@@ -339,11 +346,86 @@ document.getElementById("runway-edit-button").addEventListener("click", () => {
   showScreen("dressup");
 });
 
-// 'AI 평가 받기' 버튼 (지금은 안내만. 5단계에서 진짜 평가로 이어져요.)
+// ===================================================================
+//  [5단계 핵심] 옷차림 평가하기
+//
+//  ★★★ 나중에 '진짜 AI(LLM)'로 바꿀 부분은 딱 이 evaluateOutfit 함수예요. ★★★
+//  지금은 인터넷/AI 없이, 미리 정한 규칙으로 점수를 계산하는 '가짜 평가'예요.
+//  나중에는 이 함수 안에서 character.evalPrompt(숨은 기준)와 입은 옷을
+//  LLM에게 보내서 점수·코멘트를 받아오도록 바꾸면 돼요.
+//
+//  입력: character(캐릭터), worn(입은 옷 목록)
+//  출력: { score(점수), verdict(한줄평), comment(코멘트) }
+// ===================================================================
+function evaluateOutfit(character, worn) {
+  let score = 60; // 기본 점수
+
+  // 입은 옷들의 태그를 한 곳에 모아요
+  const matchedLikes = [];    // 취향에 맞은 아이템
+  const matchedDislikes = []; // 취향에 안 맞은 아이템
+  for (const item of worn) {
+    if (item.tags.some((t) => character.likeTags.includes(t))) {
+      score += 12;
+      matchedLikes.push(item.name);
+    }
+    if (item.tags.some((t) => character.dislikeTags.includes(t))) {
+      score -= 15;
+      matchedDislikes.push(item.name);
+    }
+  }
+
+  // 머리끝~발끝 다 갖춰 입었는지 (모자·상의·신발)
+  const fullyDressed = wearing.hat && wearing.top && wearing.shoes;
+  const missing = [];
+  if (!wearing.hat) missing.push("모자");
+  if (!wearing.top) missing.push("상의");
+  if (!wearing.shoes) missing.push("신발");
+  if (fullyDressed) score += 15;
+
+  // 점수를 0~100 사이로 정리
+  score = Math.max(0, Math.min(100, score));
+
+  // 점수에 따른 한줄평(verdict)과 이모지
+  let verdict, emoji;
+  if (score >= 85)      { verdict = "완벽해요! 오늘의 주인공! "; emoji = "👑"; }
+  else if (score >= 70) { verdict = "꽤 마음에 들어요!";        emoji = "😊"; }
+  else if (score >= 50) { verdict = "음… 나쁘진 않은데.";       emoji = "🤔"; }
+  else                  { verdict = "이건 내 취향이 아니야…";    emoji = "😵"; }
+
+  // 캐릭터가 말하듯 코멘트를 만들어요
+  const parts = [];
+  if (matchedLikes.length) parts.push(`${matchedLikes.join(", ")}는 완전 내 취향이야!`);
+  if (matchedDislikes.length) parts.push(`근데 ${matchedDislikes.join(", ")}는 오늘 컨셉이랑 좀 안 맞아 ㅠ`);
+  if (missing.length) parts.push(`${missing.join(", ")}까지 챙겼으면 더 좋았을 텐데!`);
+  if (!parts.length) parts.push("음, 무난하네. 좀 더 나다운 포인트가 있으면 좋겠어.");
+  const comment = parts.join(" ");
+
+  return { score, verdict, emoji, comment };
+}
+
+// 'AI 평가 받기' 버튼 → 평가 실행 후 결과 카드 보여주기
 document.getElementById("evaluate-button").addEventListener("click", () => {
-  const wornNames = getWornItems().map((it) => it.name).join(", ") || "아무것도 안 입음";
-  document.getElementById("runway-message").textContent =
-    `🔎 (다음 5단계) "${wornNames}" 옷차림을 ${currentCharacter.name}가 평가합니다.`;
+  const worn = getWornItems();
+  const result = evaluateOutfit(currentCharacter, worn);
+
+  document.getElementById("result-emoji").textContent = result.emoji;
+  document.getElementById("result-score-num").textContent = result.score;
+  document.getElementById("result-verdict").textContent = result.verdict;
+  document.getElementById("result-comment").textContent = `${currentCharacter.name}: “${result.comment}”`;
+
+  document.getElementById("result-overlay").classList.remove("hidden");
+});
+
+// 결과 카드의 '옷 다시 입히기' 버튼
+document.getElementById("result-edit-button").addEventListener("click", () => {
+  document.getElementById("result-overlay").classList.add("hidden");
+  showScreen("dressup");
+});
+
+// 결과 카드의 '다른 캐릭터' 버튼
+document.getElementById("result-again-button").addEventListener("click", () => {
+  document.getElementById("result-overlay").classList.add("hidden");
+  showScreen("select");
 });
 
 // -------------------------------------------------------------------
