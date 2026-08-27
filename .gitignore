@@ -1,0 +1,6 @@
+# 게임 실행에는 필요 없는, 테스트/검증용으로 설치되는 것들
+node_modules/
+package-lock.json
+
+# OS / 에디터 부산물
+.DS_Store
