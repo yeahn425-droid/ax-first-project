@@ -37,56 +37,45 @@ header h1 {
   margin: 16px 0 4px;
 }
 
-/* ===== 화면 ①: 캐릭터 고르기 ===== */
-.character-list {
+/* ===== 화면 ①: 게임 시작 ===== */
+#screen-start {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
   justify-content: center;
   padding: 24px 16px 48px;
-  max-width: 900px;
-  margin: 0 auto;
 }
 
-/* 캐릭터 카드 하나 */
-.char-card {
+.start-card {
   background: #ffffff;
-  border-radius: 24px;
-  padding: 12px 12px 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  width: 200px;
-  cursor: pointer;
+  border-radius: 28px;
+  padding: 24px 28px 30px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  max-width: 100%;
   text-align: center;
-  border: 3px solid transparent;
-  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
 }
 
-.char-card:hover {
-  transform: translateY(-4px);
-  border-color: #ff6fa5;
-  box-shadow: 0 16px 36px rgba(255, 111, 165, 0.25);
-}
-
-.char-preview {
-  width: 130px;
-  height: 174px;
+.start-preview {
+  width: 180px;
+  height: 240px;
   display: block;
   margin: 0 auto;
 }
 
-.char-name {
-  font-size: 20px;
-  font-weight: 700;
-  margin-top: 6px;
+.start-name {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 4px;
 }
 
-.char-quote {
-  font-size: 13px;
+.start-desc {
+  font-size: 14px;
   color: #777;
-  margin-top: 6px;
-  line-height: 1.5;
-  font-style: italic;
+  line-height: 1.6;
+  margin: 10px 0 4px;
 }
+
+/* 시작 화면의 시작 버튼은 카드 폭에 맞춰요 */
+#start-button { width: 100%; }
 
 /* '캐릭터 다시 고르기' 버튼 */
 .back-button {

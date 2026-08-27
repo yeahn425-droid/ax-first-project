@@ -17,11 +17,18 @@
     <p class="subtitle">5단계 · 캐릭터가 옷차림을 평가해줘요</p>
   </header>
 
-  <!-- ============ 화면 ① 캐릭터 고르기 ============ -->
-  <section id="screen-select">
-    <h2 class="screen-title">누구를 꾸며줄까요?</h2>
-    <!-- 이 안은 game.js가 캐릭터 카드로 채워줘요 -->
-    <div id="character-list" class="character-list"></div>
+  <!-- ============ 화면 ① 게임 시작 ============ -->
+  <section id="screen-start">
+    <div class="start-card">
+      <!-- 피코 미리보기 (game.js가 채워줘요) -->
+      <svg viewBox="0 0 300 400" class="start-preview" id="start-preview"></svg>
+      <div class="start-name">피코</div>
+      <p class="start-desc">
+        시작하면 피코가 <b>오늘의 컨셉</b>을 말해줘요.<br>
+        대사를 잘 읽고 어울리는 옷을 입혀주세요! 🎨
+      </p>
+      <button id="start-button" class="finish-button">게임 시작 🎬</button>
+    </div>
   </section>
 
   <!-- ============ 화면 ② 옷 입히기 ============ -->
@@ -29,7 +36,7 @@
 
     <!-- 왼쪽: 무대 -->
     <section class="stage-area">
-      <button id="back-button" class="back-button">← 캐릭터 다시 고르기</button>
+      <button id="back-button" class="back-button">← 처음으로</button>
       <div class="stage">
         <!-- 이 안(캐릭터 그림)은 game.js가 고른 캐릭터에 맞춰 채워줘요 -->
         <svg viewBox="0 0 300 400" class="character" id="character-svg"></svg>
@@ -99,7 +106,7 @@
       <div class="result-verdict" id="result-verdict"></div>
       <p class="result-comment" id="result-comment"></p>
       <div class="result-buttons">
-        <button id="result-again-button" class="ghost-button">다른 캐릭터</button>
+        <button id="result-again-button" class="ghost-button">새 컨셉으로</button>
         <button id="result-edit-button" class="finish-button">옷 다시 입히기</button>
       </div>
       <p class="result-note">※ 지금은 임시 평가예요. 나중에 진짜 AI로 바뀌어요.</p>

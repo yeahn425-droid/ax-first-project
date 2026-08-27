@@ -9,29 +9,75 @@
 // ===================================================================
 
 // -------------------------------------------------------------------
-// 1) 캐릭터 목록
-//    - quote      : 유저에게 보이는 대사/힌트 (이걸 보고 유추해서 입힘)
-//    - evalPrompt : 유저에게 '안 보이는' 상세 평가 기준.
-//                   나중에 LLM에게 "이 기준으로 채점해줘" 하고 넘길 문장이에요.
+// 1) 캐릭터: 지금은 '피코' 한 명이에요.
+//    (몸 전체가 하나의 이미지. 이 그림 위에 옷을 얹어요.)
 // -------------------------------------------------------------------
-const characters = [
+const PICO = {
+  name: "피코",
+  bodyImage: "images/Pico_muscle.png",
+};
+
+// -------------------------------------------------------------------
+// 1-2) 오늘의 컨셉(요구사항) 목록
+//    게임을 시작할 때마다 이 중 하나가 '랜덤'으로 뽑혀요.
+//    - quote      : 유저에게 보이는 대사/힌트 (이걸 보고 유추해서 입힘)
+//    - evalPrompt : 유저에겐 '안 보이는' 상세 평가 기준.
+//                   나중에 LLM에게 "이 기준으로 채점해줘" 하고 넘길 문장이에요.
+//    - likeTags/dislikeTags : 지금의 '가짜 평가'가 쓰는 내부 기준
+//                             (나중에 진짜 LLM을 쓰면 필요 없어져요)
+// -------------------------------------------------------------------
+const concepts = [
   {
-    id: "pico",
-    name: "피코",
-    // 캐릭터 전체가 하나의 이미지예요. 이 그림 위에 옷을 얹어요.
-    bodyImage: "images/Pico_muscle.png",
+    id: "smart",
+    label: "지적인 룩",
     quote: "음~ 오늘은 지적이면서도 센스 있는 룩이면 좋겠어. 이 안경에 어울리게 부탁해 🤓",
-    // ↓↓↓ 유저에겐 안 보임 (LLM 평가용 프롬프트) ↓↓↓
     evalPrompt:
-      "피코는 똑똑하고 개성 있는 스타일을 좋아합니다. 안경과 어울리는 지적이면서도 " +
+      "오늘 피코의 컨셉은 '지적이고 세련된 룩'입니다. 안경과 어울리는 단정하면서도 " +
       "포인트가 있는 조합에 높은 점수를 주세요. 너무 뻔하거나 지나치게 스포티한 조합은 " +
-      "피코의 개성과 안 맞아 낮게 평가합니다.",
-    // ↓↓↓ '가짜 평가'가 점수를 계산할 때 쓰는 내부 기준 (나중에 LLM 쓰면 필요 없어짐)
-    likeTags: ["unique"],
+      "컨셉과 안 맞아 낮게 평가합니다.",
+    likeTags: ["unique", "elegant"],
     dislikeTags: ["sporty"],
   },
-  // 다른 캐릭터도 같은 방식으로 여기에 추가하면 돼요:
-  //   { id:"...", name:"...", bodyImage:"images/파일.png", quote:"...", evalPrompt:"...", likeTags:[...], dislikeTags:[...] }
+  {
+    id: "party",
+    label: "우아한 파티룩",
+    quote: "오늘 저녁에 근사한 파티가 있어! 우아하고 화려하게 부탁해 ✨",
+    evalPrompt:
+      "오늘 피코의 컨셉은 '우아한 파티룩'입니다. 격식 있고 화려하며 우아한 조합에 높은 점수를 " +
+      "주세요. 너무 캐주얼하거나 운동복 느낌의 조합은 파티 분위기와 안 맞아 낮게 평가합니다.",
+    likeTags: ["elegant", "cute"],
+    dislikeTags: ["casual", "sporty"],
+  },
+  {
+    id: "active",
+    label: "발랄 액티브룩",
+    quote: "오늘은 밖에서 신나게 뛰어놀 거야! 활동적이고 편한 옷이 좋아 🏃",
+    evalPrompt:
+      "오늘 피코의 컨셉은 '발랄하고 활동적인 룩'입니다. 편하고 캐주얼하며 스포티한 조합에 높은 " +
+      "점수를 주세요. 너무 격식 차린 우아한 조합은 활동성과 안 맞아 낮게 평가합니다.",
+    likeTags: ["sporty", "casual"],
+    dislikeTags: ["elegant"],
+  },
+  {
+    id: "cute",
+    label: "사랑스러운 데이트룩",
+    quote: "오늘은 사랑스럽고 귀여운 느낌이면 좋겠어~ 두근두근 데이트가 있거든 💕",
+    evalPrompt:
+      "오늘 피코의 컨셉은 '사랑스러운 데이트룩'입니다. 귀엽고 사랑스러우며 포인트가 있는 조합에 " +
+      "높은 점수를 주세요. 너무 투박하거나 스포티한 조합은 사랑스러운 분위기와 안 맞아 낮게 평가합니다.",
+    likeTags: ["cute", "unique"],
+    dislikeTags: ["sporty"],
+  },
+  {
+    id: "unique",
+    label: "개성 만점 룩",
+    quote: "남들과 똑같은 건 싫어! 오늘은 나만의 개성이 톡톡 튀는 룩으로 가자 😎",
+    evalPrompt:
+      "오늘 피코의 컨셉은 '개성 넘치는 유니크 룩'입니다. 독특하고 포인트가 강한 개성 있는 조합에 " +
+      "높은 점수를 주세요. 너무 무난하고 평범한 조합은 개성과 안 맞아 낮게 평가합니다.",
+    likeTags: ["unique", "elegant"],
+    dislikeTags: ["casual"],
+  },
 ];
 
 // -------------------------------------------------------------------
@@ -132,7 +178,8 @@ const CATEGORIES = ["hat", "top", "bottom", "dress", "shoes"];
 // 3) 지금 상태를 기억하는 공간
 //    부위마다 지금 입은 옷의 id를 담아둬요. (안 입었으면 null)
 // -------------------------------------------------------------------
-let currentCharacter = null;
+let currentCharacter = PICO;   // 지금은 항상 피코
+let currentConcept = null;     // 게임 시작 때 랜덤으로 정해져요
 const wearing = { hat: null, top: null, bottom: null, dress: null, shoes: null };
 
 // -------------------------------------------------------------------
@@ -230,42 +277,34 @@ function renderFallbackFace(char) {
 // 5) 화면 전환
 // -------------------------------------------------------------------
 function showScreen(name) {
-  document.getElementById("screen-select").classList.toggle("hidden", name !== "select");
+  document.getElementById("screen-start").classList.toggle("hidden", name !== "start");
   document.getElementById("screen-dressup").classList.toggle("hidden", name !== "dressup");
   document.getElementById("screen-runway").classList.toggle("hidden", name !== "runway");
 }
 
 // -------------------------------------------------------------------
-// 6) 캐릭터 고르는 화면 그리기
-//    여기서 유저는 캐릭터의 '대사(quote)'를 보고 어떤 캐릭터인지 감을 잡아요.
+// 6) 게임 시작 화면 그리기 (피코 미리보기)
 // -------------------------------------------------------------------
-function drawCharacterSelect() {
-  const list = document.getElementById("character-list");
-  list.innerHTML = "";
-  for (const char of characters) {
-    const card = document.createElement("div");
-    card.className = "char-card";
-    card.innerHTML = `
-      <svg viewBox="0 0 300 400" class="char-preview">${renderCharacterBase(char, false)}</svg>
-      <div class="char-name">${char.name}</div>
-      <div class="char-quote">“${char.quote}”</div>`;
-    card.addEventListener("click", () => selectCharacter(char));
-    list.appendChild(card);
-  }
+function drawStartScreen() {
+  document.getElementById("start-preview").innerHTML = renderCharacterBase(PICO, false);
 }
 
 // -------------------------------------------------------------------
-// 7) 캐릭터를 골랐을 때
+// 7) '게임 시작'을 눌렀을 때 → 컨셉을 랜덤으로 뽑고 옷 입히기 화면으로
 // -------------------------------------------------------------------
-function selectCharacter(char) {
+function startGame() {
   sfxSelect();
-  currentCharacter = char;
+
+  // 오늘의 컨셉을 랜덤으로 하나 뽑아요
+  currentConcept = concepts[Math.floor(Math.random() * concepts.length)];
+
+  // 입었던 옷 초기화
   for (const c of CATEGORIES) wearing[c] = null;
 
-  // 입히는 화면 상단에 캐릭터 이름과 '대사'를 보여줘요 (유일한 힌트!)
-  document.getElementById("current-name").textContent = char.name;
-  document.getElementById("current-quote").textContent = `“${char.quote}”`;
-  document.getElementById("character-svg").innerHTML = renderCharacterBase(char, true);
+  // 입히는 화면 상단에 피코 이름과 '오늘의 컨셉 대사'를 보여줘요 (유일한 힌트!)
+  document.getElementById("current-name").textContent = PICO.name;
+  document.getElementById("current-quote").textContent = `“${currentConcept.quote}”`;
+  document.getElementById("character-svg").innerHTML = renderCharacterBase(PICO, true);
 
   document.getElementById("finish-message").textContent = "";
   drawWardrobe();
@@ -632,21 +671,21 @@ document.addEventListener("pointerdown", onFirstGesture);
 //  나중에는 이 함수 안에서 character.evalPrompt(숨은 기준)와 입은 옷을
 //  LLM에게 보내서 점수·코멘트를 받아오도록 바꾸면 돼요.
 //
-//  입력: character(캐릭터), worn(입은 옷 목록)
+//  입력: concept(오늘의 컨셉), worn(입은 옷 목록)
 //  출력: { score(점수), verdict(한줄평), comment(코멘트) }
 // ===================================================================
-function evaluateOutfit(character, worn) {
+function evaluateOutfit(concept, worn) {
   let score = 60; // 기본 점수
 
-  // 입은 옷들의 태그를 한 곳에 모아요
-  const matchedLikes = [];    // 취향에 맞은 아이템
-  const matchedDislikes = []; // 취향에 안 맞은 아이템
+  // 입은 옷들의 태그를 오늘 컨셉의 취향과 비교해요
+  const matchedLikes = [];    // 컨셉에 맞은 아이템
+  const matchedDislikes = []; // 컨셉에 안 맞은 아이템
   for (const item of worn) {
-    if (item.tags.some((t) => character.likeTags.includes(t))) {
+    if (item.tags.some((t) => concept.likeTags.includes(t))) {
       score += 12;
       matchedLikes.push(item.name);
     }
-    if (item.tags.some((t) => character.dislikeTags.includes(t))) {
+    if (item.tags.some((t) => concept.dislikeTags.includes(t))) {
       score -= 15;
       matchedDislikes.push(item.name);
     }
@@ -690,7 +729,7 @@ function evaluateOutfit(character, worn) {
 // 드럼롤이 끝나면 자동으로 호출돼요 → 평가 결과 카드 띄우기
 function showResult() {
   const worn = getWornItems();
-  const result = evaluateOutfit(currentCharacter, worn);
+  const result = evaluateOutfit(currentConcept, worn);
 
   document.getElementById("result-emoji").textContent = result.emoji;
   document.getElementById("result-score-num").textContent = result.score;
@@ -702,7 +741,7 @@ function showResult() {
   document.getElementById("result-overlay").classList.remove("hidden");
 }
 
-// 결과 카드의 '옷 다시 입히기' 버튼
+// 결과 카드의 '옷 다시 입히기' 버튼 (같은 컨셉 유지)
 document.getElementById("result-edit-button").addEventListener("click", () => {
   sfxClick();
   switchBGM("main"); // 평소 BGM으로 복귀
@@ -710,24 +749,26 @@ document.getElementById("result-edit-button").addEventListener("click", () => {
   showScreen("dressup");
 });
 
-// 결과 카드의 '다른 캐릭터' 버튼
+// 결과 카드의 '새 컨셉으로' 버튼 → 시작 화면으로 (다시 시작하면 새 컨셉 랜덤)
 document.getElementById("result-again-button").addEventListener("click", () => {
   sfxClick();
   switchBGM("main"); // 평소 BGM으로 복귀
   document.getElementById("result-overlay").classList.add("hidden");
-  showScreen("select");
+  showScreen("start");
 });
 
 // -------------------------------------------------------------------
-// 13) '캐릭터 다시 고르기' 버튼
+// 13) '게임 시작' 버튼 / '처음으로' 버튼
 // -------------------------------------------------------------------
+document.getElementById("start-button").addEventListener("click", startGame);
+
 document.getElementById("back-button").addEventListener("click", () => {
   sfxClick();
-  showScreen("select");
+  showScreen("start");
 });
 
 // -------------------------------------------------------------------
 // 14) 게임 시작!
 // -------------------------------------------------------------------
-drawCharacterSelect();
-showScreen("select");
+drawStartScreen();
+showScreen("start");
