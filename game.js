@@ -60,17 +60,47 @@ const wardrobe = [
 
   // ---- 상의 ----
   {
-    id: "top_dress", category: "top", name: "핑크 원피스", tags: ["cute", "elegant"],
-    onBody: `
-      <path d="M104 128 Q150 116 196 128 L216 300 L84 300 Z" fill="#ff86b3"/>
-      <path d="M104 128 Q150 150 196 128 L192 160 Q150 176 108 160 Z" fill="#ff6fa5"/>`,
-    icon: `<path d="M11 10 Q20 6 29 10 L34 34 L6 34 Z" fill="#ff86b3"/>`,
-  },
-  {
     id: "top_tee", category: "top", name: "노란 티셔츠", tags: ["casual", "unique"],
     onBody: `
       <path d="M88 132 L106 127 Q150 116 194 127 L212 132 L209 174 L190 182 L190 228 L110 228 L110 182 L91 174 Z" fill="#ffd94a"/>`,
     icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#ffd94a"/>`,
+  },
+  {
+    id: "top_blouse", category: "top", name: "하늘 블라우스", tags: ["elegant", "unique"],
+    onBody: `
+      <path d="M90 133 L108 127 Q150 116 192 127 L210 133 L206 172 L190 180 L190 226 L110 226 L110 180 L94 172 Z" fill="#bfe3ff"/>
+      <path d="M150 120 L150 224" stroke="#8fc7ef" stroke-width="2.5" fill="none"/>`,
+    icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#bfe3ff"/>`,
+  },
+
+  // ---- 하의 ----
+  {
+    id: "bottom_jeans", category: "bottom", name: "청바지", tags: ["casual", "sporty"],
+    onBody: `
+      <path d="M112 270 Q150 262 188 270 L188 292 L112 292 Z" fill="#4f6fae"/>
+      <path d="M114 292 L146 292 L126 356 L102 354 Z" fill="#4f6fae"/>
+      <path d="M154 292 L186 292 L198 354 L174 356 Z" fill="#4f6fae"/>
+      <path d="M150 292 L150 330" stroke="#3c568c" stroke-width="2" fill="none"/>`,
+    icon: `<path d="M7 8 L33 8 L31 13 L9 13 Z" fill="#4f6fae"/>
+           <path d="M9 13 L19 13 L17 34 L11 34 Z" fill="#4f6fae"/>
+           <path d="M21 13 L31 13 L29 34 L23 34 Z" fill="#4f6fae"/>`,
+  },
+  {
+    id: "bottom_skirt", category: "bottom", name: "체크 치마", tags: ["cute", "elegant"],
+    onBody: `
+      <path d="M108 272 Q150 264 192 272 L214 332 L86 332 Z" fill="#f7a8c9"/>
+      <path d="M120 276 L132 330 M150 270 L150 332 M180 276 L168 330" stroke="#e07aa6" stroke-width="2" fill="none"/>
+      <path d="M96 300 L204 300" stroke="#e07aa6" stroke-width="2" fill="none" opacity="0.6"/>`,
+    icon: `<path d="M8 8 Q20 5 32 8 L36 34 L4 34 Z" fill="#f7a8c9"/>`,
+  },
+
+  // ---- 원피스 (상·하의를 한 번에 덮는 한 벌) ----
+  {
+    id: "dress_pink", category: "dress", name: "핑크 원피스", tags: ["cute", "elegant"],
+    onBody: `
+      <path d="M104 128 Q150 116 196 128 L216 300 L84 300 Z" fill="#ff86b3"/>
+      <path d="M104 128 Q150 150 196 128 L192 160 Q150 176 108 160 Z" fill="#ff6fa5"/>`,
+    icon: `<path d="M11 10 Q20 6 29 10 L34 34 L6 34 Z" fill="#ff86b3"/>`,
   },
 
   // ---- 신발 ----
@@ -92,13 +122,18 @@ const wardrobe = [
   },
 ];
 
-const categoryNames = { hat: "모자", top: "상의", shoes: "신발" };
+const categoryNames = { hat: "모자", top: "상의", bottom: "하의", dress: "원피스", shoes: "신발" };
+
+// 옷 슬롯(부위) 목록. 옷장에 보이는 순서이기도 해요.
+// ※ 화면에 겹치는 순서(z-순서)는 renderCharacterBase에서 따로 정해요.
+const CATEGORIES = ["hat", "top", "bottom", "dress", "shoes"];
 
 // -------------------------------------------------------------------
 // 3) 지금 상태를 기억하는 공간
+//    부위마다 지금 입은 옷의 id를 담아둬요. (안 입었으면 null)
 // -------------------------------------------------------------------
 let currentCharacter = null;
-const wearing = { hat: null, top: null, shoes: null };
+const wearing = { hat: null, top: null, bottom: null, dress: null, shoes: null };
 
 // -------------------------------------------------------------------
 // 4) 캐릭터 그림 만들기
@@ -112,17 +147,24 @@ const wearing = { hat: null, top: null, shoes: null };
 //    - baked 를 주면       : 그 옷 그림을 아예 박아서 그려요 (런웨이/카드용)
 // -------------------------------------------------------------------
 function renderCharacterBase(char, includeLayers, baked) {
-  const b = baked || { hat: "", top: "", shoes: "" };
-  const shoesLayer = includeLayers ? `<g id="layer-shoes"></g>` : b.shoes;
-  const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : b.top;
-  const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : b.hat;
+  const b = baked || {};
+  // 각 부위의 '빈 층'(입히기 화면) 또는 '박아넣은 그림'(런웨이/카드)
+  const layer = (cat) => (includeLayers ? `<g id="layer-${cat}"></g>` : (b[cat] || ""));
+  const shoesLayer  = layer("shoes");
+  const bottomLayer = layer("bottom");
+  const topLayer    = layer("top");
+  const dressLayer  = layer("dress");
+  const hatLayer    = layer("hat");
 
   // (A) 캐릭터 전체가 하나의 이미지인 경우: 그 이미지를 몸으로 쓰고 위에 옷을 얹어요.
+  //     겹치는 순서(뒤→앞): 신발 → 하의 → 상의 → 원피스 → 모자
   if (char.bodyImage) {
     return `
       <image href="${char.bodyImage}" x="2" y="8" width="296" height="384" preserveAspectRatio="xMidYMid meet"/>
       ${shoesLayer}
+      ${bottomLayer}
       ${topLayer}
+      ${dressLayer}
       ${hatLayer}`;
   }
 
@@ -139,6 +181,7 @@ function renderCharacterBase(char, includeLayers, baked) {
     <rect x="126" y="255" width="22" height="92" rx="11" fill="${char.skin}"/>
     <rect x="152" y="255" width="22" height="92" rx="11" fill="${char.skin}"/>
     ${shoesLayer}
+    ${bottomLayer}
     <!-- 근육질 팔 (이두박근 포함) -->
     <rect x="88"  y="150" width="20" height="84" rx="10" fill="${char.skin}"/>
     <ellipse cx="98"  cy="172" rx="14" ry="18" fill="${char.skin}"/>
@@ -154,6 +197,7 @@ function renderCharacterBase(char, includeLayers, baked) {
     <path d="M174 168 Q160 186 150 172" stroke="rgba(0,0,0,0.08)" stroke-width="3" fill="none"/>
     <path d="M132 212 L168 212 M134 228 L166 228" stroke="rgba(0,0,0,0.07)" stroke-width="2.5" fill="none"/>
     ${topLayer}
+    ${dressLayer}
     <!-- 목 -->
     <rect x="137" y="126" width="26" height="28" rx="9" fill="${char.skin}"/>
     <!-- 머리 (얼굴 그림 또는 캐릭터 이미지) -->
@@ -216,9 +260,7 @@ function drawCharacterSelect() {
 function selectCharacter(char) {
   sfxSelect();
   currentCharacter = char;
-  wearing.hat = null;
-  wearing.top = null;
-  wearing.shoes = null;
+  for (const c of CATEGORIES) wearing[c] = null;
 
   // 입히는 화면 상단에 캐릭터 이름과 '대사'를 보여줘요 (유일한 힌트!)
   document.getElementById("current-name").textContent = char.name;
@@ -237,7 +279,7 @@ function selectCharacter(char) {
 function drawWardrobe() {
   const list = document.getElementById("wardrobe-list");
   list.innerHTML = "";
-  for (const category of ["hat", "top", "shoes"]) {
+  for (const category of CATEGORIES) {
     const title = document.createElement("div");
     title.className = "category-title";
     title.textContent = categoryNames[category];
@@ -270,6 +312,13 @@ function clickItem(item) {
   } else {
     wearing[item.category] = item.id;
     sfxEquip();   // 입을 때 소리
+    // 원피스와 상·하의는 함께 입을 수 없어요 (원피스가 한 벌로 덮으니까).
+    if (item.category === "dress") {
+      wearing.top = null;
+      wearing.bottom = null;
+    } else if (item.category === "top" || item.category === "bottom") {
+      wearing.dress = null;
+    }
   }
   dressCharacter();
   drawWardrobe();
@@ -279,7 +328,7 @@ function clickItem(item) {
 // 10) 캐릭터에게 지금 입은 옷 그려주기
 // -------------------------------------------------------------------
 function dressCharacter() {
-  for (const category of ["hat", "top", "shoes"]) {
+  for (const category of CATEGORIES) {
     const layer = document.getElementById("layer-" + category);
     const wornId = wearing[category];
     if (wornId) {
@@ -297,7 +346,7 @@ function dressCharacter() {
 // -------------------------------------------------------------------
 function getWornItems() {
   const worn = [];
-  for (const category of ["hat", "top", "shoes"]) {
+  for (const category of CATEGORIES) {
     const id = wearing[category];
     if (id) worn.push(wardrobe.find((it) => it.id === id));
   }
@@ -310,8 +359,8 @@ function getWornItems() {
 //     런웨이에선 지금 입은 옷을 그림에 아예 박아서 한 장으로 만들어요.
 // -------------------------------------------------------------------
 function renderDressed(char) {
-  const baked = { hat: "", top: "", shoes: "" };
-  for (const category of ["hat", "top", "shoes"]) {
+  const baked = {};
+  for (const category of CATEGORIES) {
     const id = wearing[category];
     if (id) baked[category] = wardrobe.find((it) => it.id === id).onBody;
   }
@@ -603,11 +652,17 @@ function evaluateOutfit(character, worn) {
     }
   }
 
-  // 머리끝~발끝 다 갖춰 입었는지 (모자·상의·신발)
-  const fullyDressed = wearing.hat && wearing.top && wearing.shoes;
+  // 머리끝~발끝 다 갖춰 입었는지 확인.
+  //  - 몸통은 '원피스 한 벌' 또는 '상의+하의 둘 다' 중 하나면 갖춘 걸로 봐요.
+  const bodyCovered = wearing.dress || (wearing.top && wearing.bottom);
+  const fullyDressed = wearing.hat && bodyCovered && wearing.shoes;
   const missing = [];
   if (!wearing.hat) missing.push("모자");
-  if (!wearing.top) missing.push("상의");
+  if (!bodyCovered) {
+    // 원피스도, 상·하의 조합도 아직 없을 때만 여기 옴 → 빠진 걸 알려줘요.
+    if (!wearing.top) missing.push("상의");
+    if (!wearing.bottom) missing.push("하의");
+  }
   if (!wearing.shoes) missing.push("신발");
   if (fullyDressed) score += 15;
 
