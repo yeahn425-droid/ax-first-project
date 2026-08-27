@@ -18,82 +18,20 @@ const characters = [
   {
     id: "pico",
     name: "피코",
-    // 피코 얼굴을 직접 그린 그림(안경·눈·부리·머리 볏). 목 아래는 공용 근육질 몸이 붙어요.
-    faceSvg: `
-      <path d="M132 46 Q133 22 148 30 Q151 12 163 26 Q178 20 173 42 Q158 50 150 44 Q140 52 132 46 Z" fill="#cba6f3"/>
-      <ellipse cx="150" cy="92" rx="54" ry="58" fill="#c69cf1"/>
-      <ellipse cx="150" cy="122" rx="46" ry="28" fill="#b98cec" opacity="0.35"/>
-      <circle cx="126" cy="92" r="11" fill="#3a3040"/>
-      <circle cx="122" cy="88" r="3.5" fill="#ffffff"/>
-      <circle cx="174" cy="92" r="11" fill="#3a3040"/>
-      <circle cx="170" cy="88" r="3.5" fill="#ffffff"/>
-      <rect x="128" y="112" width="44" height="22" rx="11" fill="#f4e8a3"/>
-      <line x1="140" y1="123" x2="160" y2="123" stroke="#cdbb70" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="126" cy="90" r="20" fill="none" stroke="#3c2b57" stroke-width="6"/>
-      <circle cx="174" cy="90" r="20" fill="none" stroke="#3c2b57" stroke-width="6"/>
-      <path d="M146 88 Q150 83 154 88" stroke="#3c2b57" stroke-width="6" fill="none"/>`,
+    // 캐릭터 전체가 하나의 이미지예요. 이 그림 위에 옷을 얹어요.
+    bodyImage: "images/Pico_muscle.png",
     quote: "음~ 오늘은 지적이면서도 센스 있는 룩이면 좋겠어. 이 안경에 어울리게 부탁해 🤓",
-    skin: "#bd8cf0", // 몸통 색(피코 보라색)
-    hairColor: "#8a5cc0", hairStyle: "short", // (얼굴 그림을 쓰므로 실제로는 안 쓰임)
+    // ↓↓↓ 유저에겐 안 보임 (LLM 평가용 프롬프트) ↓↓↓
     evalPrompt:
       "피코는 똑똑하고 개성 있는 스타일을 좋아합니다. 안경과 어울리는 지적이면서도 " +
       "포인트가 있는 조합에 높은 점수를 주세요. 너무 뻔하거나 지나치게 스포티한 조합은 " +
       "피코의 개성과 안 맞아 낮게 평가합니다.",
-    likeTags: ["unique"],
-    dislikeTags: ["sporty"],
-  },
-  {
-    id: "minji",
-    name: "민지",
-    // 진짜 캐릭터 얼굴 이미지 경로. 비워두면 임시 얼굴을 써요.
-    // 예) faceImage: "images/minji.png",
-    faceImage: "",
-    quote: "오늘 소풍 가는 날이야! 화사하고 사랑스럽게 입혀줘 💕",
-    skin: "#f7d7b5",
-    hairColor: "#5b3b2e",
-    hairStyle: "bob",
-    // ↓↓↓ 유저에겐 안 보임 (LLM 평가용 프롬프트) ↓↓↓
-    evalPrompt:
-      "민지는 발랄하고 러블리한 스타일을 좋아합니다. 핑크·파스텔 계열이나 " +
-      "사랑스러운 아이템(원피스, 리본, 밀짚모자 등)에는 높은 점수를 주세요. " +
-      "운동화처럼 스포티하거나 투박한 아이템은 컨셉과 어울리지 않아 낮게 평가합니다. " +
-      "머리끝부터 발끝까지 갖춰 입었는지, 전체적으로 화사하게 통일됐는지도 함께 봐 주세요.",
     // ↓↓↓ '가짜 평가'가 점수를 계산할 때 쓰는 내부 기준 (나중에 LLM 쓰면 필요 없어짐)
-    likeTags: ["cute"],
+    likeTags: ["unique"],
     dislikeTags: ["sporty"],
   },
-  {
-    id: "haneul",
-    name: "하늘",
-    faceImage: "",
-    quote: "중요한 파티에 초대받았어. 우아하고 품격 있게 부탁해.",
-    skin: "#f2c9a0",
-    hairColor: "#2b2b2b",
-    hairStyle: "long",
-    evalPrompt:
-      "하늘은 차분하고 우아한 스타일을 좋아합니다. 왕관, 구두, 드레스처럼 " +
-      "격식 있고 우아한 아이템에는 높은 점수를 주세요. 캐주얼하거나 편한 느낌의 " +
-      "아이템(티셔츠, 운동화)은 파티 컨셉과 맞지 않아 낮게 평가합니다. " +
-      "전체적으로 통일감 있고 세련됐는지를 중점적으로 봐 주세요.",
-    likeTags: ["elegant"],
-    dislikeTags: ["casual"],
-  },
-  {
-    id: "luna",
-    name: "루나",
-    faceImage: "",
-    quote: "오늘은 나답게! 남들과 다른, 톡톡 튀는 스타일이면 좋겠어 ✨",
-    skin: "#f9dcc4",
-    hairColor: "#d46aa0",
-    hairStyle: "short",
-    evalPrompt:
-      "루나는 개성 있고 톡톡 튀는 스타일을 좋아합니다. 남들과 다른 조합이나 " +
-      "포인트가 되는 개성 있는 아이템에는 높은 점수를 주세요. 너무 무난하거나 " +
-      "지나치게 격식만 차린 조합은 재미없다고 느껴 낮게 평가합니다. " +
-      "과감하고 자기다운 매치인지, 밋밋하지 않은지를 봐 주세요.",
-    likeTags: ["unique"],
-    dislikeTags: ["elegant"],
-  },
+  // 다른 캐릭터도 같은 방식으로 여기에 추가하면 돼요:
+  //   { id:"...", name:"...", bodyImage:"images/파일.png", quote:"...", evalPrompt:"...", likeTags:[...], dislikeTags:[...] }
 ];
 
 // -------------------------------------------------------------------
@@ -106,17 +44,17 @@ const wardrobe = [
   {
     id: "hat_straw", category: "hat", name: "밀짚모자", tags: ["cute", "casual"],
     onBody: `
-      <ellipse cx="150" cy="60" rx="70" ry="16" fill="#e8c06a"/>
-      <path d="M118 60 Q150 18 182 60 Z" fill="#f0cd7d"/>
-      <ellipse cx="150" cy="60" rx="34" ry="7" fill="#d9a94e"/>`,
+      <ellipse cx="150" cy="52" rx="70" ry="15" fill="#e8c06a"/>
+      <path d="M120 52 Q150 12 180 52 Z" fill="#f0cd7d"/>
+      <ellipse cx="150" cy="52" rx="30" ry="6" fill="#d9a94e"/>`,
     icon: `<ellipse cx="20" cy="26" rx="16" ry="5" fill="#e8c06a"/>
            <path d="M9 26 Q20 8 31 26 Z" fill="#f0cd7d"/>`,
   },
   {
     id: "hat_crown", category: "hat", name: "왕관", tags: ["elegant", "unique"],
     onBody: `
-      <path d="M112 62 L124 36 L138 56 L150 30 L162 56 L176 36 L188 62 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="2"/>
-      <circle cx="150" cy="40" r="4" fill="#ff5b8a"/>`,
+      <path d="M114 58 L126 32 L140 52 L150 26 L160 52 L174 32 L186 58 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="2"/>
+      <circle cx="150" cy="34" r="4" fill="#ff5b8a"/>`,
     icon: `<path d="M6 30 L11 12 L18 26 L20 8 L22 26 L29 12 L34 30 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="1.5"/>`,
   },
 
@@ -124,14 +62,14 @@ const wardrobe = [
   {
     id: "top_dress", category: "top", name: "핑크 원피스", tags: ["cute", "elegant"],
     onBody: `
-      <path d="M112 150 Q150 138 188 150 L206 300 L94 300 Z" fill="#ff86b3"/>
-      <path d="M112 150 Q150 168 188 150 L184 180 Q150 196 116 180 Z" fill="#ff6fa5"/>`,
+      <path d="M106 138 Q150 124 194 138 L214 302 L86 302 Z" fill="#ff86b3"/>
+      <path d="M106 138 Q150 158 194 138 L190 170 Q150 186 110 170 Z" fill="#ff6fa5"/>`,
     icon: `<path d="M11 10 Q20 6 29 10 L34 34 L6 34 Z" fill="#ff86b3"/>`,
   },
   {
     id: "top_tee", category: "top", name: "노란 티셔츠", tags: ["casual", "unique"],
     onBody: `
-      <path d="M100 150 L112 150 Q150 138 188 150 L200 150 L200 176 L186 182 L186 240 L114 240 L114 182 L100 176 Z" fill="#ffd94a"/>`,
+      <path d="M90 140 L108 137 Q150 124 192 137 L210 140 L207 180 L188 188 L188 244 L112 244 L112 188 L93 180 Z" fill="#ffd94a"/>`,
     icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#ffd94a"/>`,
   },
 
@@ -139,16 +77,16 @@ const wardrobe = [
   {
     id: "shoes_sneakers", category: "shoes", name: "운동화", tags: ["casual", "sporty"],
     onBody: `
-      <rect x="118" y="338" width="30" height="16" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>
-      <rect x="152" y="338" width="30" height="16" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>`,
+      <rect x="104" y="366" width="42" height="17" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>
+      <rect x="154" y="366" width="42" height="17" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>`,
     icon: `<rect x="5" y="18" width="14" height="9" rx="4" fill="#fff" stroke="#4a90d9" stroke-width="2"/>
            <rect x="21" y="18" width="14" height="9" rx="4" fill="#fff" stroke="#4a90d9" stroke-width="2"/>`,
   },
   {
     id: "shoes_heels", category: "shoes", name: "빨간 구두", tags: ["elegant"],
     onBody: `
-      <path d="M118 338 L150 338 L146 352 L120 352 Z" fill="#e23b52"/>
-      <path d="M152 338 L184 338 L182 352 L156 352 Z" fill="#e23b52"/>`,
+      <path d="M106 366 L148 366 L143 384 L112 384 Z" fill="#e23b52"/>
+      <path d="M152 366 L194 366 L188 384 L157 384 Z" fill="#e23b52"/>`,
     icon: `<path d="M6 16 L20 16 L18 30 L8 30 Z" fill="#e23b52"/>
            <path d="M22 16 L34 16 L32 30 L24 30 Z" fill="#e23b52"/>`,
   },
@@ -179,6 +117,16 @@ function renderCharacterBase(char, includeLayers, baked) {
   const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : b.top;
   const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : b.hat;
 
+  // (A) 캐릭터 전체가 하나의 이미지인 경우: 그 이미지를 몸으로 쓰고 위에 옷을 얹어요.
+  if (char.bodyImage) {
+    return `
+      <image href="${char.bodyImage}" x="2" y="8" width="296" height="384" preserveAspectRatio="xMidYMid meet"/>
+      ${shoesLayer}
+      ${topLayer}
+      ${hatLayer}`;
+  }
+
+  // (B) 그 외: 공용 근육질 몸통 + 머리 자리
   // 머리 자리: (1)직접 그린 얼굴(faceSvg) > (2)이미지 파일(faceImage) > (3)임시 얼굴
   const head = char.faceSvg
     ? char.faceSvg
