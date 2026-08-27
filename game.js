@@ -16,6 +16,33 @@
 // -------------------------------------------------------------------
 const characters = [
   {
+    id: "pico",
+    name: "피코",
+    // 피코 얼굴을 직접 그린 그림(안경·눈·부리·머리 볏). 목 아래는 공용 근육질 몸이 붙어요.
+    faceSvg: `
+      <path d="M132 46 Q133 22 148 30 Q151 12 163 26 Q178 20 173 42 Q158 50 150 44 Q140 52 132 46 Z" fill="#cba6f3"/>
+      <ellipse cx="150" cy="92" rx="54" ry="58" fill="#c69cf1"/>
+      <ellipse cx="150" cy="122" rx="46" ry="28" fill="#b98cec" opacity="0.35"/>
+      <circle cx="126" cy="92" r="11" fill="#3a3040"/>
+      <circle cx="122" cy="88" r="3.5" fill="#ffffff"/>
+      <circle cx="174" cy="92" r="11" fill="#3a3040"/>
+      <circle cx="170" cy="88" r="3.5" fill="#ffffff"/>
+      <rect x="128" y="112" width="44" height="22" rx="11" fill="#f4e8a3"/>
+      <line x1="140" y1="123" x2="160" y2="123" stroke="#cdbb70" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="126" cy="90" r="20" fill="none" stroke="#3c2b57" stroke-width="6"/>
+      <circle cx="174" cy="90" r="20" fill="none" stroke="#3c2b57" stroke-width="6"/>
+      <path d="M146 88 Q150 83 154 88" stroke="#3c2b57" stroke-width="6" fill="none"/>`,
+    quote: "음~ 오늘은 지적이면서도 센스 있는 룩이면 좋겠어. 이 안경에 어울리게 부탁해 🤓",
+    skin: "#bd8cf0", // 몸통 색(피코 보라색)
+    hairColor: "#8a5cc0", hairStyle: "short", // (얼굴 그림을 쓰므로 실제로는 안 쓰임)
+    evalPrompt:
+      "피코는 똑똑하고 개성 있는 스타일을 좋아합니다. 안경과 어울리는 지적이면서도 " +
+      "포인트가 있는 조합에 높은 점수를 주세요. 너무 뻔하거나 지나치게 스포티한 조합은 " +
+      "피코의 개성과 안 맞아 낮게 평가합니다.",
+    likeTags: ["unique"],
+    dislikeTags: ["sporty"],
+  },
+  {
     id: "minji",
     name: "민지",
     // 진짜 캐릭터 얼굴 이미지 경로. 비워두면 임시 얼굴을 써요.
@@ -152,8 +179,10 @@ function renderCharacterBase(char, includeLayers, baked) {
   const topLayer   = includeLayers ? `<g id="layer-top"></g>`   : b.top;
   const hatLayer   = includeLayers ? `<g id="layer-hat"></g>`   : b.hat;
 
-  // 머리 자리: 진짜 이미지가 있으면 이미지, 없으면 임시 얼굴
-  const head = char.faceImage
+  // 머리 자리: (1)직접 그린 얼굴(faceSvg) > (2)이미지 파일(faceImage) > (3)임시 얼굴
+  const head = char.faceSvg
+    ? char.faceSvg
+    : char.faceImage
     ? `<image href="${char.faceImage}" x="98" y="34" width="104" height="112" preserveAspectRatio="xMidYMid meet"/>`
     : renderFallbackFace(char);
 
