@@ -44,17 +44,17 @@ const wardrobe = [
   {
     id: "hat_straw", category: "hat", name: "밀짚모자", tags: ["cute", "casual"],
     onBody: `
-      <ellipse cx="150" cy="52" rx="70" ry="15" fill="#e8c06a"/>
-      <path d="M120 52 Q150 12 180 52 Z" fill="#f0cd7d"/>
-      <ellipse cx="150" cy="52" rx="30" ry="6" fill="#d9a94e"/>`,
+      <ellipse cx="150" cy="54" rx="66" ry="15" fill="#e8c06a"/>
+      <path d="M122 54 Q150 18 178 54 Z" fill="#f0cd7d"/>
+      <ellipse cx="150" cy="54" rx="30" ry="6" fill="#d9a94e"/>`,
     icon: `<ellipse cx="20" cy="26" rx="16" ry="5" fill="#e8c06a"/>
            <path d="M9 26 Q20 8 31 26 Z" fill="#f0cd7d"/>`,
   },
   {
     id: "hat_crown", category: "hat", name: "왕관", tags: ["elegant", "unique"],
     onBody: `
-      <path d="M114 58 L126 32 L140 52 L150 26 L160 52 L174 32 L186 58 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="2"/>
-      <circle cx="150" cy="34" r="4" fill="#ff5b8a"/>`,
+      <path d="M116 60 L128 34 L141 54 L150 28 L159 54 L172 34 L184 60 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="2"/>
+      <circle cx="150" cy="36" r="4" fill="#ff5b8a"/>`,
     icon: `<path d="M6 30 L11 12 L18 26 L20 8 L22 26 L29 12 L34 30 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="1.5"/>`,
   },
 
@@ -62,14 +62,14 @@ const wardrobe = [
   {
     id: "top_dress", category: "top", name: "핑크 원피스", tags: ["cute", "elegant"],
     onBody: `
-      <path d="M106 138 Q150 124 194 138 L214 302 L86 302 Z" fill="#ff86b3"/>
-      <path d="M106 138 Q150 158 194 138 L190 170 Q150 186 110 170 Z" fill="#ff6fa5"/>`,
+      <path d="M104 128 Q150 116 196 128 L216 300 L84 300 Z" fill="#ff86b3"/>
+      <path d="M104 128 Q150 150 196 128 L192 160 Q150 176 108 160 Z" fill="#ff6fa5"/>`,
     icon: `<path d="M11 10 Q20 6 29 10 L34 34 L6 34 Z" fill="#ff86b3"/>`,
   },
   {
     id: "top_tee", category: "top", name: "노란 티셔츠", tags: ["casual", "unique"],
     onBody: `
-      <path d="M90 140 L108 137 Q150 124 192 137 L210 140 L207 180 L188 188 L188 244 L112 244 L112 188 L93 180 Z" fill="#ffd94a"/>`,
+      <path d="M88 132 L106 127 Q150 116 194 127 L212 132 L209 174 L190 182 L190 228 L110 228 L110 182 L91 174 Z" fill="#ffd94a"/>`,
     icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#ffd94a"/>`,
   },
 
@@ -77,16 +77,16 @@ const wardrobe = [
   {
     id: "shoes_sneakers", category: "shoes", name: "운동화", tags: ["casual", "sporty"],
     onBody: `
-      <rect x="104" y="366" width="42" height="17" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>
-      <rect x="154" y="366" width="42" height="17" rx="8" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>`,
+      <rect x="94" y="360" width="54" height="18" rx="9" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>
+      <rect x="152" y="360" width="54" height="18" rx="9" fill="#ffffff" stroke="#4a90d9" stroke-width="3"/>`,
     icon: `<rect x="5" y="18" width="14" height="9" rx="4" fill="#fff" stroke="#4a90d9" stroke-width="2"/>
            <rect x="21" y="18" width="14" height="9" rx="4" fill="#fff" stroke="#4a90d9" stroke-width="2"/>`,
   },
   {
     id: "shoes_heels", category: "shoes", name: "빨간 구두", tags: ["elegant"],
     onBody: `
-      <path d="M106 366 L148 366 L143 384 L112 384 Z" fill="#e23b52"/>
-      <path d="M152 366 L194 366 L188 384 L157 384 Z" fill="#e23b52"/>`,
+      <path d="M96 360 L148 360 L142 380 L104 380 Z" fill="#e23b52"/>
+      <path d="M152 360 L204 360 L196 380 L158 380 Z" fill="#e23b52"/>`,
     icon: `<path d="M6 16 L20 16 L18 30 L8 30 Z" fill="#e23b52"/>
            <path d="M22 16 L34 16 L32 30 L24 30 Z" fill="#e23b52"/>`,
   },
