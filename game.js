@@ -104,32 +104,28 @@ const wardrobe = [
     icon: `<path d="M6 30 L11 12 L18 26 L20 8 L22 26 L29 12 L34 30 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="1.5"/>`,
   },
 
-  // ---- 상의 ----
+  // ---- 상의 (그림 이미지) ----
   {
-    id: "top_tee", category: "top", name: "노란 티셔츠", tags: ["casual", "unique"],
-    onBody: `
-      <path d="M88 132 L106 127 Q150 116 194 127 L212 132 L209 174 L190 182 L190 228 L110 228 L110 182 L91 174 Z" fill="#ffd94a"/>`,
-    icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#ffd94a"/>`,
+    id: "top_sailor", category: "top", name: "세일러 상의", tags: ["cute", "unique"],
+    onBody: `<image href="images/Pico_sailor.png" x="39.6" y="66.2" width="218.8" height="259.4" preserveAspectRatio="none"/>`,
+    icon: `<image href="images/Pico_sailor.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
   },
   {
-    id: "top_blouse", category: "top", name: "하늘 블라우스", tags: ["elegant", "unique"],
-    onBody: `
-      <path d="M90 133 L108 127 Q150 116 192 127 L210 133 L206 172 L190 180 L190 226 L110 226 L110 180 L94 172 Z" fill="#bfe3ff"/>
-      <path d="M150 120 L150 224" stroke="#8fc7ef" stroke-width="2.5" fill="none"/>`,
-    icon: `<path d="M7 12 L11 10 Q20 6 29 10 L33 12 L33 19 L29 21 L29 34 L11 34 L11 21 L7 19 Z" fill="#bfe3ff"/>`,
+    id: "top_white", category: "top", name: "흰 티셔츠", tags: ["casual"],
+    onBody: `<image href="images/Pico_white.png" x="38.8" y="88.3" width="220.4" height="201.7" preserveAspectRatio="none"/>`,
+    icon: `<image href="images/Pico_white.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+  },
+  {
+    id: "top_pink", category: "top", name: "핑크 후드티", tags: ["cute", "casual"],
+    onBody: `<image href="images/Pico_pink.png" x="39.2" y="77.9" width="219.6" height="223.2" preserveAspectRatio="none"/>`,
+    icon: `<image href="images/Pico_pink.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
   },
 
   // ---- 하의 ----
   {
     id: "bottom_jeans", category: "bottom", name: "청바지", tags: ["casual", "sporty"],
-    onBody: `
-      <path d="M112 270 Q150 262 188 270 L188 292 L112 292 Z" fill="#4f6fae"/>
-      <path d="M114 292 L146 292 L126 356 L102 354 Z" fill="#4f6fae"/>
-      <path d="M154 292 L186 292 L198 354 L174 356 Z" fill="#4f6fae"/>
-      <path d="M150 292 L150 330" stroke="#3c568c" stroke-width="2" fill="none"/>`,
-    icon: `<path d="M7 8 L33 8 L31 13 L9 13 Z" fill="#4f6fae"/>
-           <path d="M9 13 L19 13 L17 34 L11 34 Z" fill="#4f6fae"/>
-           <path d="M21 13 L31 13 L29 34 L23 34 Z" fill="#4f6fae"/>`,
+    onBody: `<image href="images/Pico_jeans.png" x="73.3" y="254.8" width="151.8" height="109.5" preserveAspectRatio="none"/>`,
+    icon: `<image href="images/Pico_jeans.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
   },
   {
     id: "bottom_skirt", category: "bottom", name: "체크 치마", tags: ["cute", "elegant"],
@@ -142,11 +138,9 @@ const wardrobe = [
 
   // ---- 원피스 (상·하의를 한 번에 덮는 한 벌) ----
   {
-    id: "dress_pink", category: "dress", name: "핑크 원피스", tags: ["cute", "elegant"],
-    onBody: `
-      <path d="M104 128 Q150 116 196 128 L216 300 L84 300 Z" fill="#ff86b3"/>
-      <path d="M104 128 Q150 150 196 128 L192 160 Q150 176 108 160 Z" fill="#ff6fa5"/>`,
-    icon: `<path d="M11 10 Q20 6 29 10 L34 34 L6 34 Z" fill="#ff86b3"/>`,
+    id: "dress_frill", category: "dress", name: "프릴 원피스", tags: ["cute", "elegant"],
+    onBody: `<image href="images/Pico_dress.png" x="37.5" y="95.3" width="222.9" height="260.6" preserveAspectRatio="none"/>`,
+    icon: `<image href="images/Pico_dress.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
   },
 
   // ---- 신발 ----
