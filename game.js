@@ -84,7 +84,22 @@ const concepts = [
 // 2) 옷장 데이터
 //    옷마다 'tags'(성격 태그)는 그대로 둬요.
 //    이건 이제 화면에 안 보이고, 나중에 AI 평가를 도울 '내부 정보'예요.
+//
+//  ★ 옷 이미지 규격(중요): 옷 그림은 'tools/align_clothes.js'로 정렬돼서
+//    피코 몸(1114x1411)의 '입었을 때 위치'에 이미 딱 놓여 있어요.
+//    그래서 옷 이미지는 전부 피코 몸과 '똑같은 좌표'로 겹치기만 하면 돼요(wornImg).
+//    → 옷마다 좌표를 따로 잴 필요가 없어요. 사이즈가 항상 맞아요.
 // -------------------------------------------------------------------
+
+// 옷 이미지: 피코 몸과 동일한 자리에 통째로 겹쳐요 (전신 프레임 이미지)
+function wornImg(file) {
+  return `<image href="images/${file}" x="2" y="8" width="296" height="384" preserveAspectRatio="xMidYMid meet"/>`;
+}
+// 옷장 버튼 썸네일 (미리 잘라둔 아이콘 이미지)
+function iconImg(file) {
+  return `<image href="images/${file}" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`;
+}
+
 const wardrobe = [
   // ---- 모자 ----
   {
@@ -104,28 +119,24 @@ const wardrobe = [
     icon: `<path d="M6 30 L11 12 L18 26 L20 8 L22 26 L29 12 L34 30 Z" fill="#ffd54a" stroke="#e6b800" stroke-width="1.5"/>`,
   },
 
-  // ---- 상의 (그림 이미지) ----
+  // ---- 상의 (그림 이미지, 자동 정렬됨) ----
   {
     id: "top_sailor", category: "top", name: "세일러 상의", tags: ["cute", "unique"],
-    onBody: `<image href="images/Pico_sailor.png" x="39.6" y="66.2" width="218.8" height="259.4" preserveAspectRatio="none"/>`,
-    icon: `<image href="images/Pico_sailor.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+    onBody: wornImg("Pico_sailor.png"), icon: iconImg("icon_sailor.png"),
   },
   {
     id: "top_white", category: "top", name: "흰 티셔츠", tags: ["casual"],
-    onBody: `<image href="images/Pico_white.png" x="38.8" y="88.3" width="220.4" height="201.7" preserveAspectRatio="none"/>`,
-    icon: `<image href="images/Pico_white.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+    onBody: wornImg("Pico_white.png"), icon: iconImg("icon_white.png"),
   },
   {
     id: "top_pink", category: "top", name: "핑크 후드티", tags: ["cute", "casual"],
-    onBody: `<image href="images/Pico_pink.png" x="39.2" y="77.9" width="219.6" height="223.2" preserveAspectRatio="none"/>`,
-    icon: `<image href="images/Pico_pink.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+    onBody: wornImg("Pico_pink.png"), icon: iconImg("icon_pink.png"),
   },
 
   // ---- 하의 ----
   {
     id: "bottom_jeans", category: "bottom", name: "청바지", tags: ["casual", "sporty"],
-    onBody: `<image href="images/Pico_jeans.png" x="73.3" y="254.8" width="151.8" height="109.5" preserveAspectRatio="none"/>`,
-    icon: `<image href="images/Pico_jeans.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+    onBody: wornImg("Pico_jeans.png"), icon: iconImg("icon_jeans.png"),
   },
   {
     id: "bottom_skirt", category: "bottom", name: "체크 치마", tags: ["cute", "elegant"],
@@ -139,8 +150,7 @@ const wardrobe = [
   // ---- 원피스 (상·하의를 한 번에 덮는 한 벌) ----
   {
     id: "dress_frill", category: "dress", name: "프릴 원피스", tags: ["cute", "elegant"],
-    onBody: `<image href="images/Pico_dress.png" x="37.5" y="95.3" width="222.9" height="260.6" preserveAspectRatio="none"/>`,
-    icon: `<image href="images/Pico_dress.png" width="40" height="40" preserveAspectRatio="xMidYMid meet"/>`,
+    onBody: wornImg("Pico_dress.png"), icon: iconImg("icon_dress.png"),
   },
 
   // ---- 신발 ----
